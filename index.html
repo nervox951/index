@@ -81,8 +81,9 @@ const firebaseConfig = {
   projectId: "perso-journaling",
   storageBucket: "perso-journaling.firebasestorage.app",
   messagingSenderId: "660360215177",
-  appId: "1:660360215177:web:WEBAPPID_A_REMPLACER",  // à remplacer par appId Web
-  measurementId: "G-MEASUREMENTID_A_REMPLACER"      // optionnel
+  appId: "1:660360215177:web:abcd1234efgh5678",
+  measurementId: "G-1A2B3C4D5E"
+      // optionnel
 };
 firebase.initializeApp(firebaseConfig);
 const auth = firebase.auth();
@@ -221,3 +222,4 @@ document.querySelector(".addEntry").addEventListener("click", ()=>{
 
 </body>
 </html>
+
