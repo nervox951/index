@@ -3,183 +3,168 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Trade Board Professionnel</title>
+<title>Trade Board</title>
+<!-- Firebase SDK -->
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
 <style>
-:root {
-  --bg: #f0f2f5;
-  --card-bg: #fff;
-  --text: #222;
-  --header-bg: #1e293b;
-  --header-text: #fff;
-  --bar-bg: #e2e8f0;
-  --bar-fill: linear-gradient(90deg, #22c55e, #16a34a);
-  --btn-bg: #16a34a;
-  --btn-text: #fff;
-  --btn-inactive: #94a3b8;
-  --gain-color: #22c55e;
-  --loss-color: #ef4444;
-}
-body { margin:0; font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Inter,sans-serif; background: var(--bg); color: var(--text); }
-header { background: var(--header-bg); color: var(--header-text); padding:1rem; text-align:center; font-size:1.5rem; font-weight:bold; }
-.container { display:flex; flex-direction:column; height: calc(100vh - 60px); }
-.strategies-list, .calendar-journal { flex:1; overflow-y:auto; padding:1rem; }
-.strategy-card { background: var(--card-bg); border-radius:1rem; box-shadow:0 4px 10px rgba(0,0,0,0.15); margin-bottom:1rem; padding:1rem; }
-.strategy-header { display:flex; justify-content:space-between; align-items:center; margin-bottom:0.5rem; }
-.strategy-title { font-size:1.1rem; font-weight:bold; }
-.progress-bar { background: var(--bar-bg); border-radius:1rem; height:10px; width:100%; overflow:hidden; margin:0.5rem 0; }
-.progress-fill { height:100%; background: var(--bar-fill); width:0%; transition: width 0.3s ease; }
-.criteria { list-style:none; padding:0; margin:0.5rem 0; }
-.criteria li { margin-bottom:0.5rem; display:flex; align-items:center; }
-.criteria input[type="checkbox"] { transform:scale(1.3); margin-right:0.75rem; }
-.enter-btn { display:block; width:100%; padding:0.75rem; border:none; border-radius:0.75rem; background: var(--btn-inactive); color: var(--btn-text); font-size:1rem; font-weight:bold; margin-top:0.5rem; cursor:pointer; }
-.enter-btn.active { background: var(--btn-bg); animation: pulse 1s infinite; }
-@keyframes pulse { 0%{box-shadow:0 0 0 0 rgba(34,197,94,0.6);} 70%{box-shadow:0 0 0 15px rgba(34,197,94,0);} 100%{box-shadow:0 0 0 0 rgba(34,197,94,0);} }
-.calendar-grid { display:grid; grid-template-columns: repeat(7, 1fr); gap:5px; }
-.calendar-cell { background: var(--card-bg); border-radius:0.5rem; padding:0.5rem; min-height:100px; display:flex; flex-direction:column; justify-content:flex-start; cursor:pointer; position:relative; }
-.calendar-cell .day-number { font-weight:bold; margin-bottom:0.25rem; }
-.calendar-cell .summary { font-size:0.85rem; margin-top:auto; }
-.modal { display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.5); justify-content:center; align-items:center; z-index:1000; }
-.modal-content { background: var(--card-bg); padding:1rem; border-radius:1rem; width:90%; max-width:500px; max-height:90%; overflow-y:auto; }
-.modal-header { display:flex; justify-content:space-between; align-items:center; margin-bottom:0.5rem; }
-.modal-header h3 { margin:0; }
-.close-btn { cursor:pointer; font-weight:bold; }
-.modal-form { display:flex; flex-direction:column; gap:0.5rem; margin-bottom:1rem; }
-.modal-form input, .modal-form select, .modal-form textarea { padding:0.5rem; border-radius:0.5rem; border:1px solid var(--bar-bg); }
-.modal-form button { padding:0.75rem; border:none; border-radius:0.75rem; background: var(--btn-bg); color:#fff; font-weight:bold; cursor:pointer; }
-nav { display:flex; justify-content:center; background: var(--card-bg); padding:0.75rem 0; border-top:1px solid var(--bar-bg); position:fixed; bottom:0; width:100%; z-index:1000; }
-nav button { margin:0 0.5rem; padding:0.5rem 1rem; border:none; border-radius:0.75rem; background: var(--btn-bg); color:#fff; font-weight:bold; cursor:pointer; }
-@media (min-width:1024px){
-  .container{flex-direction:row;}
-  .strategies-list{flex:2; order:1; padding:1rem;}
-  .calendar-journal{flex:4; order:2; padding:1rem;}
-  nav{position:static; border-top:none;}
-}
+body { font-family: Arial, sans-serif; margin:0; padding:0; background:#f4f4f4;}
+header { background:#1a73e8; color:#fff; padding:1rem; text-align:center; font-size:1.5rem;}
+nav { display:flex; justify-content:space-around; background:#e2e2e2; padding:0.5rem 0;}
+nav button { padding:0.5rem 1rem; border:none; border-radius:5px; cursor:pointer; font-weight:bold;}
+nav button.active { background:#1a73e8; color:#fff;}
+section { padding:1rem;}
+.strategy { background:#fff; margin-bottom:1rem; padding:1rem; border-radius:8px; box-shadow:0 2px 5px rgba(0,0,0,0.1);}
+.progress-bar { height:20px; background:#ddd; border-radius:10px; overflow:hidden; margin-top:0.5rem;}
+.progress-bar-inner { height:100%; background:#1a73e8; width:0%; text-align:center; color:#fff; line-height:20px; font-size:0.9rem;}
+.calendar { display:grid; grid-template-columns:repeat(7, 1fr); gap:1px; background:#ccc;}
+.calendar div { background:#fff; min-height:80px; padding:0.5rem; position:relative;}
+.calendar div span { position:absolute; top:5px; right:5px; font-size:0.8rem; font-weight:bold;}
+.entry { margin-top:1.5rem; font-size:0.8rem;}
+input, textarea { width:100%; padding:0.3rem; margin:0.2rem 0; border-radius:4px; border:1px solid #ccc;}
+button.addEntry { background:#1a73e8; color:#fff; padding:0.5rem; border:none; border-radius:5px; cursor:pointer; width:100%;}
 </style>
 </head>
 <body>
-<header>📈 Trade Board Professionnel</header>
-<div class="container">
-  <div class="strategies-list" id="strategiesList"></div>
-  <div class="calendar-journal">
-    <div id="calendarView"></div>
-  </div>
-</div>
+
+<header>Trade Board</header>
+
 <nav>
-  <button onclick="showTab('strategies')">Stratégies</button>
-  <button onclick="showTab('calendar')">Calendrier / Journal</button>
+  <button id="tab-strategies" class="active">Stratégies</button>
+  <button id="tab-calendar">Calendrier / Journal</button>
 </nav>
 
-<div class="modal" id="journalModal">
-  <div class="modal-content">
-    <div class="modal-header">
-      <h3 id="modalDate"></h3>
-      <span class="close-btn" onclick="closeModal()">✖</span>
-    </div>
-    <form class="modal-form" id="journalForm">
-      <input type="text" id="asset" placeholder="Actif (ex: EURUSD)" required>
-      <input type="number" id="price" placeholder="Prix d'entrée" required>
-      <select id="type"><option value="achat">Achat</option><option value="vente">Vente</option></select>
-      <input type="number" id="result" placeholder="Résultat (gain/perte)" required>
-      <textarea id="description" placeholder="Description / notes"></textarea>
-      <button type="submit">Ajouter</button>
-    </form>
-    <div id="entriesList"></div>
-    <div style="display:flex; justify-content:space-between; margin-top:0.5rem;">
-      <button onclick="prevMonth()">⬅ Mois précédent</button>
-      <button onclick="nextMonth()">Mois suivant ➡</button>
+<section id="section-strategies">
+  <h2>Mes stratégies</h2>
+  <div class="strategy">
+    <strong>Exemple stratégie</strong>
+    <div>
+      <label><input type="checkbox" class="condition"> Condition 1</label><br>
+      <label><input type="checkbox" class="condition"> Condition 2</label><br>
+      <label><input type="checkbox" class="condition"> Condition 3</label><br>
+      <div class="progress-bar"><div class="progress-bar-inner">0%</div></div>
+      <button class="enterPosition" disabled>Entrer en position</button>
     </div>
   </div>
-</div>
+</section>
+
+<section id="section-calendar" style="display:none;">
+  <h2>Calendrier & Journal</h2>
+  <div id="calendar" class="calendar"></div>
+  <div id="entryForm" style="margin-top:1rem;">
+    <input type="date" id="entryDate">
+    <input type="text" id="entryAsset" placeholder="Actif (ex: EURUSD)">
+    <select id="entryType"><option value="achat">Achat</option><option value="vente">Vente</option></select>
+    <input type="number" id="entryPrice" placeholder="Prix">
+    <input type="number" id="entryResult" placeholder="Résultat (gain/perte)">
+    <textarea id="entryDescription" placeholder="Description"></textarea>
+    <button class="addEntry">Ajouter l'entrée</button>
+  </div>
+</section>
 
 <script>
-let strategies=[{title:"Breakout H1 EURUSD",criteria:[{text:"Cassure résistance H1",done:false},{text:"Volume > moyenne 20",done:false},{text:"RSI > 55",done:false},{text:"MACD bullish cross",done:false},{text:"Pas de news majeures",done:false}]},{title:"Rebond support BTCUSDT",criteria:[{text:"Test support daily",done:false},{text:"Bougie reversal",done:false},{text:"RSI oversold",done:false}]}];
-let journal=[];
-let currentDate=new Date();
+// --- Firebase config ---
+const firebaseConfig = {
+  apiKey: "AIzaSyACFzFXKK_1EH6_PVgaQQXD3fc8mBvQRvg",
+  authDomain: "perso-journaling.firebaseapp.com",
+  projectId: "perso-journaling",
+  storageBucket: "perso-journaling.firebasestorage.app",
+  messagingSenderId: "660360215177",
+  appId: "1:660360215177:web:WEBAPPID_A_REMPLACER",  // à remplacer par appId Web
+  measurementId: "G-MEASUREMENTID_A_REMPLACER"      // optionnel
+};
+firebase.initializeApp(firebaseConfig);
+const auth = firebase.auth();
+const db = firebase.firestore();
 
-function renderStrategies(){
-  const list=document.getElementById('strategiesList'); list.innerHTML='';
-  strategies.forEach((strategy,sIndex)=>{
-    let completed=strategy.criteria.filter(c=>c.done).length;
-    let total=strategy.criteria.length;
-    let percent=Math.round((completed/total)*100);
-    const card=document.createElement('div'); card.className='strategy-card';
-    card.innerHTML=`<div class="strategy-header"><div class="strategy-title">${strategy.title}</div><div>${completed}/${total}</div></div>
-      <div class="progress-bar"><div class="progress-fill" style="width:${percent}%"></div></div>
-      <ul class="criteria">${strategy.criteria.map((c,i)=>`<li><input type="checkbox" ${c.done?'checked':''} data-s="${sIndex}" data-c="${i}">${c.text}</li>`).join('')}</ul>
-      <button class="enter-btn ${percent===100?'active':''}">${percent===100?'✔ Entrer en position':'Conditions incomplètes'}</button>`;
-    list.appendChild(card);
-  });
-  document.querySelectorAll('input[type="checkbox"]').forEach(cb=>{
-    cb.addEventListener('change',e=>{
-      const s=e.target.dataset.s; const c=e.target.dataset.c;
-      strategies[s].criteria[c].done=e.target.checked; renderStrategies();
+// --- Tab navigation ---
+const tabStrategies = document.getElementById("tab-strategies");
+const tabCalendar = document.getElementById("tab-calendar");
+const sectionStrategies = document.getElementById("section-strategies");
+const sectionCalendar = document.getElementById("section-calendar");
+
+tabStrategies.addEventListener("click", ()=>{
+  tabStrategies.classList.add("active");
+  tabCalendar.classList.remove("active");
+  sectionStrategies.style.display="block";
+  sectionCalendar.style.display="none";
+});
+tabCalendar.addEventListener("click", ()=>{
+  tabCalendar.classList.add("active");
+  tabStrategies.classList.remove("active");
+  sectionCalendar.style.display="block";
+  sectionStrategies.style.display="none";
+});
+
+// --- Strategy progress ---
+document.querySelectorAll(".strategy").forEach(strat=>{
+  const checkboxes = strat.querySelectorAll(".condition");
+  const progress = strat.querySelector(".progress-bar-inner");
+  const btn = strat.querySelector(".enterPosition");
+  checkboxes.forEach(cb=>{
+    cb.addEventListener("change", ()=>{
+      const total = checkboxes.length;
+      const checked = strat.querySelectorAll(".condition:checked").length;
+      const percent = Math.round(checked/total*100);
+      progress.style.width = percent+"%";
+      progress.textContent = percent+"%";
+      btn.disabled = (checked!==total);
     });
   });
-}
+});
 
-function showTab(tab){
-  document.querySelector('.strategies-list').style.display=tab==='strategies'?'block':'none';
-  document.querySelector('.calendar-journal').style.display=tab==='calendar'?'block':'none';
-}
+// --- Calendar ---
+const calendarEl = document.getElementById("calendar");
+let entries = {}; // { '2025-09-25': [{asset,type,price,result,desc}, ...] }
 
-function openModal(date){
-  document.getElementById('modalDate').textContent=date.toDateString();
-  document.getElementById('journalModal').style.display='flex';
-  renderEntries(date);
-  document.getElementById('journalForm').onsubmit=function(e){
-    e.preventDefault();
-    const asset=document.getElementById('asset').value;
-    const price=document.getElementById('price').value;
-    const type=document.getElementById('type').value;
-    const result=parseFloat(document.getElementById('result').value);
-    const description=document.getElementById('description').value;
-    journal.push({date: new Date(date).toDateString(), asset, price, type, result, description});
-    e.target.reset();
-    renderCalendar();
-    renderEntries(date);
-  }
-}
-
-function closeModal(){document.getElementById('journalModal').style.display='none';}
-
-function renderEntries(date){
-  const entriesDiv=document.getElementById('entriesList'); entriesDiv.innerHTML='';
-  const dayEntries=journal.filter(e=>e.date===date.toDateString());
-  dayEntries.forEach(e=>{
-    const div=document.createElement('div'); div.style.borderBottom='1px solid #ccc'; div.style.marginBottom='0.25rem';
-    div.innerHTML=`${e.asset} (${e.type}) @${e.price} → ${e.result>0?'<span style="color:var(--gain-color)">+'+e.result+'</span>':'<span style="color:var(--loss-color)">'+e.result+'</span>'})<br>${e.description}`;
-    entriesDiv.appendChild(div);
-  });
-}
-
-function renderCalendar(){
-  const cal=document.getElementById('calendarView'); cal.innerHTML='';
-  let month=currentDate.getMonth(); let year=currentDate.getFullYear();
-  let firstDay=new Date(year,month,1).getDay();
-  let daysInMonth=new Date(year,month+1,0).getDate();
-  const grid=document.createElement('div'); grid.className='calendar-grid';
-  for(let i=0;i<firstDay;i++){ grid.appendChild(document.createElement('div')); }
-  for(let d=1;d<=daysInMonth;d++){
-    const dayDiv=document.createElement('div'); dayDiv.className='calendar-cell';
-    const dayNum=document.createElement('div'); dayNum.className='day-number'; dayNum.textContent=d; dayDiv.appendChild(dayNum);
-    let dayEntries=journal.filter(e=>new Date(e.date).getDate()===d && new Date(e.date).getMonth()===month && new Date(e.date).getFullYear()===year);
-    if(dayEntries.length>0){
-      let total=dayEntries.reduce((sum,e)=>sum+e.result,0);
-      let summaryDiv=document.createElement('div'); summaryDiv.className='summary';
-      summaryDiv.style.color=total>=0?'var(--gain-color)':'var(--loss-color)';
-      summaryDiv.textContent=`${dayEntries.length} entrées, Total: ${total}`;
-      dayDiv.appendChild(summaryDiv);
+function renderCalendar(month=new Date().getMonth(), year=new Date().getFullYear()){
+  calendarEl.innerHTML="";
+  const firstDay = new Date(year, month, 1).getDay();
+  const lastDate = new Date(year, month+1, 0).getDate();
+  for(let i=0;i<firstDay;i++){calendarEl.appendChild(document.createElement("div"));}
+  for(let d=1;d<=lastDate;d++){
+    const day = new Date(year, month, d);
+    const div = document.createElement("div");
+    div.innerHTML = `<span>${d}</span>`;
+    const key = day.toISOString().slice(0,10);
+    if(entries[key]){
+      entries[key].forEach(e=>{
+        const entryDiv = document.createElement("div");
+        entryDiv.className="entry";
+        entryDiv.textContent=`${e.asset} ${e.type} ${e.result>0?"+":"-"}${e.result}`;
+        div.appendChild(entryDiv);
+      });
     }
-    dayDiv.onclick=()=>openModal(new Date(year,month,d));
-    grid.appendChild(dayDiv);
+    calendarEl.appendChild(div);
   }
-  cal.appendChild(grid);
 }
+renderCalendar();
 
-function prevMonth(){currentDate.setMonth(currentDate.getMonth()-1); renderCalendar();}
-function nextMonth(){currentDate.setMonth(currentDate.getMonth()+1); renderCalendar();}
-
-window.onload=()=>{renderStrategies(); showTab('calendar'); renderCalendar();};
+// --- Add calendar entry ---
+document.querySelector(".addEntry").addEventListener("click", ()=>{
+  const date = document.getElementById("entryDate").value;
+  if(!date) return alert("Choisis une date");
+  const asset = document.getElementById("entryAsset").value;
+  const type = document.getElementById("entryType").value;
+  const price = parseFloat(document.getElementById("entryPrice").value);
+  const result = parseFloat(document.getElementById("entryResult").value);
+  const desc = document.getElementById("entryDescription").value;
+  if(!entries[date]) entries[date]=[];
+  entries[date].push({asset,type,price,result,desc});
+  renderCalendar();
+  // --- Save to Firestore ---
+  const userId = "testUser"; // à remplacer par auth.currentUser.uid quand Auth est en place
+  db.collection("users").doc(userId).collection("journal").add({
+    date, asset, type, price, result, desc, userId
+  });
+  // Clear inputs
+  document.getElementById("entryAsset").value="";
+  document.getElementById("entryPrice").value="";
+  document.getElementById("entryResult").value="";
+  document.getElementById("entryDescription").value="";
+});
 </script>
+
 </body>
 </html>
