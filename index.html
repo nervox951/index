@@ -11,7 +11,7 @@
 <style>
 body, html{margin:0;padding:0;font-family:'Segoe UI',sans-serif;background:#f5f6fa;overflow-x:hidden;}
 /* Ecran accueil dynamique */
-#introScreen{position:fixed;top:0;left:0;width:100%;height:100%;background:#1a73e8;color:#fff;display:flex;justify-content:center;align-items:center;flex-direction:column;transition:transform 1s ease-out;z-index:100;}
+#introScreen{position:fixed;top:0;left:0;width:100%;height:100%;background:#1a73e8;color:#fff;display:flex;justify-content:center;align-items:center;flex-direction:column;transition:transform 1s ease-out;z-index:100;cursor:pointer;}
 #introScreen.hide{transform:translateX(-100%);}
 #introScreen h1{font-size:3rem;margin:0;}
 #introScreen p{font-size:1.2rem;margin-top:1rem;text-align:center;max-width:600px;line-height:1.4;}
@@ -63,7 +63,6 @@ button.addEntry:hover,button.authButton:hover{background:#155ab6;}
   <input type="password" id="authPassword" placeholder="Mot de passe">
   <button class="authButton" id="signInBtn">Se connecter</button>
   <button class="authButton" id="signUpBtn">Créer un compte</button>
-  <button class="authButton" id="googleSignInBtn">Se connecter avec Google</button>
   <button class="authButton" id="signOutBtn" style="display:none;">Se déconnecter</button>
   <div id="emailWarning" style="color:red;font-size:0.85rem;display:none;margin-top:0.5rem;">Email non vérifié !</div>
 </div>
@@ -130,9 +129,14 @@ firebase.initializeApp(firebaseConfig);
 const auth = firebase.auth();
 const db = firebase.firestore();
 
-// --- Intro dynamique ---
+// --- Intro dynamique corrigé ---
 const introScreen = document.getElementById("introScreen");
-setTimeout(()=>{introScreen.classList.add("hide");setTimeout(()=>{introScreen.style.display="none";},1000);},2000);
+const hideIntro = () => {
+  introScreen.classList.add("hide");
+  setTimeout(()=>{introScreen.style.display="none";},1000);
+};
+setTimeout(hideIntro, 3000);
+introScreen.addEventListener("click", hideIntro);
 
 // --- Sections et onglets ---
 const mainNav = document.getElementById("mainNav");
@@ -151,19 +155,13 @@ document.getElementById("tab-calendar").addEventListener("click",()=>{
   document.getElementById("tab-strategies").classList.remove("active");
 });
 
-// --- Authentification ---
+// --- Authentification simple ---
 const authContainer = document.getElementById("authContainer");
 const signOutBtn = document.getElementById("signOutBtn");
 const emailWarning = document.getElementById("emailWarning");
-const googleSignInBtn = document.getElementById("googleSignInBtn");
-
 auth.onAuthStateChanged(user=>{
   if(user){
-    if(!user.emailVerified && !user.providerData.some(p=>p.providerId==="google.com")){
-      emailWarning.style.display="block"; 
-      auth.signOut(); 
-      return;
-    }
+    if(!user.emailVerified){emailWarning.style.display="block"; auth.signOut(); return;}
     emailWarning.style.display="none";
     authContainer.style.display="none";
     mainNav.style.display="flex";
@@ -179,8 +177,6 @@ auth.onAuthStateChanged(user=>{
     sectionCalendar.style.display="none";
   }
 });
-
-// Email/Password
 document.getElementById("signInBtn").addEventListener("click",()=>{
   const email=document.getElementById("authEmail").value;
   const password=document.getElementById("authPassword").value;
@@ -196,32 +192,6 @@ document.getElementById("signUpBtn").addEventListener("click",async()=>{
     alert("Compte créé ! Vérifiez votre email.");
   }catch(err){alert(err.message);}
 });
-
-// Google Sign-In
-googleSignInBtn.addEventListener("click", async () => {
-    const provider = new firebase.auth.GoogleAuthProvider();
-    try {
-        const result = await auth.signInWithPopup(provider);
-        const user = result.user;
-        const userDoc = await db.collection("users").doc(user.uid).get();
-        if(!userDoc.exists){
-            await db.collection("users").doc(user.uid).set({
-                email: user.email,
-                displayName: user.displayName,
-                createdAt: firebase.firestore.FieldValue.serverTimestamp()
-            });
-        }
-        authContainer.style.display="none";
-        mainNav.style.display="flex";
-        sectionStrategies.style.display="block";
-        sectionCalendar.style.display="none";
-        signOutBtn.style.display="block";
-        loadUserData(user.uid);
-    } catch(err){
-        alert("Erreur connexion Google : " + err.message);
-    }
-});
-
 signOutBtn.addEventListener("click",()=>auth.signOut());
 
 // --- Stratégies ---
@@ -262,7 +232,9 @@ function renderCalendar(month=currentMonth,year=currentYear){
   const daysInWeek=["Dim","Lun","Mar","Mer","Jeu","Ven","Sam"];
   daysInWeek.forEach(d=>{
     const div=document.createElement("div");
-    div.style.fontWeight="bold"; div.style.background="#e3e3e3"; div.textContent=d;
+    div.style.fontWeight="bold";
+    div.style.background="#e3e3e3";
+    div.textContent=d;
     calendarEl.appendChild(div);
   });
   for(let i=0;i<firstDay;i++) calendarEl.appendChild(document.createElement("div"));
