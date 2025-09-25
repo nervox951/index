@@ -9,34 +9,48 @@
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
 <script src="https://kit.fontawesome.com/a076d05399.js" crossorigin="anonymous"></script>
 <style>
-body{margin:0;padding:0;font-family:'Segoe UI',sans-serif;background:#f5f6fa;}
-header{background:#1a73e8;color:#fff;padding:1rem;text-align:center;font-size:1.8rem;font-weight:bold;}
+/* --- Global --- */
+body, html{margin:0;padding:0;font-family:'Segoe UI',sans-serif;background:#f5f6fa;overflow-x:hidden;}
+header{background:#1a73e8;color:#fff;padding:1rem;text-align:center;font-size:1.8rem;font-weight:bold;cursor:pointer;}
 nav{display:flex;justify-content:space-around;background:#e3e3e3;padding:0.5rem 0;position:sticky;top:0;z-index:10;}
 nav button{padding:0.6rem 1.2rem;border:none;border-radius:6px;font-weight:bold;cursor:pointer;transition:0.3s;}
 nav button.active{background:#1a73e8;color:#fff;}
 section{padding:1rem;}
-.strategy, .calendar-container{background:#fff;margin-bottom:1rem;padding:1rem;border-radius:10px;box-shadow:0 4px 8px rgba(0,0,0,0.1);}
+.strategy, .calendar-container{background:#fff;margin-bottom:1rem;padding:1rem;border-radius:10px;box-shadow:0 4px 12px rgba(0,0,0,0.15);}
 .progress-bar{height:20px;background:#eee;border-radius:10px;overflow:hidden;margin-top:0.5rem;}
 .progress-bar-inner{height:100%;background:#1a73e8;width:0%;text-align:center;color:#fff;line-height:20px;font-size:0.85rem;}
 .calendar{display:grid;grid-template-columns:repeat(7,1fr);gap:1px;background:#ccc;border-radius:8px;overflow:hidden;}
-.calendar div{background:#fff;min-height:80px;padding:0.4rem;position:relative;font-size:0.9rem;}
+.calendar div{background:#fff;min-height:80px;padding:0.4rem;position:relative;font-size:0.9rem;cursor:pointer;transition:0.3s;}
+.calendar div:hover{background:#e0f0ff;}
 .calendar div span{position:absolute;top:3px;right:5px;font-size:0.75rem;font-weight:bold;}
-.entry{margin-top:1.2rem;font-size:0.75rem;display:flex;align-items:center;}
+.entry{margin-top:1.2rem;font-size:0.75rem;display:flex;align-items:center;transition:0.2s;}
 .entry i{margin-right:5px;}
 input,textarea,select{width:100%;padding:0.4rem;margin:0.2rem 0;border-radius:5px;border:1px solid #ccc;}
-button.addEntry, button.authButton{background:#1a73e8;color:#fff;padding:0.5rem;border:none;border-radius:6px;cursor:pointer;width:100%;margin-top:0.5rem;transition:0.2s;}
-button.addEntry:hover,button.authButton:hover{background:#155ab6;}
-#authContainer{max-width:400px;margin:1rem auto;background:#fff;padding:1rem;border-radius:10px;box-shadow:0 4px 8px rgba(0,0,0,0.1);}
-.popup{position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.5);display:none;align-items:center;justify-content:center;}
-.popup-content{background:#fff;padding:2rem;border-radius:10px;max-width:400px;width:90%;position:relative;}
+button.addEntry, button.authButton, #popupSignUpBtn, #googleSignUpBtn{background:#1a73e8;color:#fff;padding:0.5rem;border:none;border-radius:6px;cursor:pointer;width:100%;margin-top:0.5rem;transition:0.2s;}
+button.addEntry:hover,button.authButton:hover,#popupSignUpBtn:hover,#googleSignUpBtn:hover{background:#155ab6;}
+#authContainer{max-width:400px;margin:1rem auto;background:#fff;padding:1rem;border-radius:10px;box-shadow:0 4px 12px rgba(0,0,0,0.15);}
+.popup{position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.5);display:none;align-items:center;justify-content:center;z-index:50;}
+.popup-content{background:#fff;padding:2rem;border-radius:10px;max-width:400px;width:90%;position:relative;animation:fadeIn 0.5s;}
 .close-popup{position:absolute;top:10px;right:10px;cursor:pointer;font-weight:bold;font-size:1.2rem;}
 .entry .gain{color:green;font-weight:bold;}
 .entry .loss{color:red;font-weight:bold;}
+
+/* --- Animation Livre --- */
+#bookCover{position:fixed;top:0;left:0;width:100%;height:100%;background:#1a73e8;display:flex;justify-content:center;align-items:center;z-index:100;cursor:pointer;transition:transform 1s ease-in-out;}
+#bookCover h1{color:#fff;font-size:3rem;letter-spacing:2px;text-align:center;transform:scale(1);transition:transform 1s;}
+#bookCover.open{transform:scaleX(0);transform-origin:left;}
+#bookCover.open h1{transform:scale(0);}
+
+/* --- Animations --- */
+@keyframes fadeIn{from{opacity:0;}to{opacity:1;}}
 </style>
 </head>
 <body>
 
-<header>Trade Board Pro</header>
+<!-- Livre d'accueil -->
+<div id="bookCover"><h1>Trade Book</h1></div>
+
+<header id="mainHeader">Trade Board Pro</header>
 
 <!-- Popup pour créer un compte -->
 <div class="popup" id="popupSignUp">
@@ -69,7 +83,7 @@ button.addEntry:hover,button.authButton:hover{background:#155ab6;}
 
 <section id="section-strategies" style="display:none;">
   <h2>Mes stratégies</h2>
-  <div class="strategy">
+  <div class="strategy" draggable="true">
     <strong>Stratégie Exemple</strong>
     <div>
       <label><input type="checkbox" class="condition"> Condition 1</label><br>
@@ -98,6 +112,10 @@ button.addEntry:hover,button.authButton:hover{background:#155ab6;}
       <option value="BTCUSD">BTCUSD</option>
       <option value="ETHUSD">ETHUSD</option>
       <option value="USDJPY">USDJPY</option>
+      <option value="XAUUSD">XAUUSD</option>
+      <option value="DJ30">DJ30</option>
+      <option value="NAS100">NAS100</option>
+      <option value="AUTRE">Ajouter un actif...</option>
     </select>
     <select id="entryType"><option value="achat">Achat</option><option value="vente">Vente</option></select>
     <input type="number" id="entryPrice" placeholder="Prix">
@@ -115,12 +133,26 @@ const firebaseConfig = {
   projectId: "perso-journaling",
   storageBucket: "perso-journaling.firebasestorage.app",
   messagingSenderId: "660360215177",
-  appId: "1:660360215177:web:WEBAPPID_A_REMPLACER",
-  measurementId: "G-MEASUREMENTID_A_REMPLACER"
+  appId: "1:660360215177:web:WEBAPPID_A_REMPLACER"
 };
 firebase.initializeApp(firebaseConfig);
 const auth = firebase.auth();
 const db = firebase.firestore();
+
+// --- Livre accueil ---
+const bookCover = document.getElementById("bookCover");
+bookCover.addEventListener("click",()=>{
+  bookCover.classList.add("open");
+  setTimeout(()=>{bookCover.style.display="none"; authContainer.style.display="block";},1000);
+});
+
+// --- Header click pour revenir accueil ---
+document.getElementById("mainHeader").addEventListener("click",()=>{
+  authContainer.style.display="block";
+  sectionStrategies.style.display="none";
+  sectionCalendar.style.display="none";
+  mainNav.style.display="none";
+});
 
 // --- Popup logique ---
 const popup = document.getElementById("popupSignUp");
@@ -130,16 +162,14 @@ showSignUp.addEventListener("click",()=>popup.style.display="flex");
 closePopup.addEventListener("click",()=>popup.style.display="none");
 
 // --- Création de compte popup ---
-const popupSignUpBtn = document.getElementById("popupSignUpBtn");
-popupSignUpBtn.addEventListener("click", async ()=>{
-  const email = document.getElementById("popupEmail").value;
-  const password = document.getElementById("popupPassword").value;
-  const firstName = document.getElementById("firstName").value;
-  const lastName = document.getElementById("lastName").value;
-  const phone = document.getElementById("phoneNumber").value;
+document.getElementById("popupSignUpBtn").addEventListener("click", async ()=>{
+  const email=document.getElementById("popupEmail").value;
+  const password=document.getElementById("popupPassword").value;
+  const firstName=document.getElementById("firstName").value;
+  const lastName=document.getElementById("lastName").value;
   try {
     const userCredential = await auth.createUserWithEmailAndPassword(email,password);
-    await userCredential.user.updateProfile({displayName:firstName+" "+lastName, phoneNumber: phone});
+    await userCredential.user.updateProfile({displayName:firstName+" "+lastName});
     await userCredential.user.sendEmailVerification();
     alert("Compte créé ! Vérifie ton email.");
     popup.style.display="none";
@@ -147,18 +177,16 @@ popupSignUpBtn.addEventListener("click", async ()=>{
 });
 
 // --- Google Sign-In ---
-const googleSignUpBtn = document.getElementById("googleSignUpBtn");
-googleSignUpBtn.addEventListener("click", async ()=>{
+document.getElementById("googleSignUpBtn").addEventListener("click", async ()=>{
   const provider = new firebase.auth.GoogleAuthProvider();
   try { await auth.signInWithPopup(provider); popup.style.display="none"; } 
   catch(err){alert(err.message);}
 });
 
 // --- Connexion classique ---
-const signInBtn = document.getElementById("signInBtn");
-signInBtn.addEventListener("click", async ()=>{
-  const email = document.getElementById("authEmail").value;
-  const password = document.getElementById("authPassword").value;
+document.getElementById("signInBtn").addEventListener("click", async ()=>{
+  const email=document.getElementById("authEmail").value;
+  const password=document.getElementById("authPassword").value;
   try {
     const userCredential = await auth.signInWithEmailAndPassword(email,password);
     if(!userCredential.user.emailVerified){
@@ -169,53 +197,35 @@ signInBtn.addEventListener("click", async ()=>{
   } catch(err){alert(err.message);}
 });
 
-const signOutBtn = document.getElementById("signOutBtn");
-signOutBtn.addEventListener("click",()=>auth.signOut());
+// --- Déconnexion ---
+document.getElementById("signOutBtn").addEventListener("click",()=>auth.signOut());
 
-// --- AuthState ---
-const authContainer = document.getElementById("authContainer");
-const mainNav = document.getElementById("mainNav");
+// --- Gestion onglets ---
 const sectionStrategies = document.getElementById("section-strategies");
 const sectionCalendar = document.getElementById("section-calendar");
+const mainNav = document.getElementById("mainNav");
+document.getElementById("tab-strategies").addEventListener("click",()=>{
+  sectionStrategies.style.display="block"; sectionCalendar.style.display="none";
+  document.getElementById("tab-strategies").classList.add("active");
+  document.getElementById("tab-calendar").classList.remove("active");
+});
+document.getElementById("tab-calendar").addEventListener("click",()=>{
+  sectionStrategies.style.display="none"; sectionCalendar.style.display="block";
+  document.getElementById("tab-strategies").classList.remove("active");
+  document.getElementById("tab-calendar").classList.add("active");
+});
 
+// --- Auth state ---
 auth.onAuthStateChanged(user=>{
-  console.log("User:",user);
-  if(user){
-    authContainer.style.display="none";
-    mainNav.style.display="flex";
-    sectionStrategies.style.display="block";
-    sectionCalendar.style.display="none";
-    signOutBtn.style.display="block";
-  } else {
-    authContainer.style.display="block";
-    mainNav.style.display="none";
-    sectionStrategies.style.display="none";
-    sectionCalendar.style.display="none";
-    signOutBtn.style.display="none";
-  }
+  if(user){authContainer.style.display="none"; mainNav.style.display="flex"; sectionStrategies.style.display="block"; document.getElementById("signOutBtn").style.display="block";}
+  else{authContainer.style.display="block"; mainNav.style.display="none"; document.getElementById("signOutBtn").style.display="none"; sectionStrategies.style.display="none"; sectionCalendar.style.display="none";}
 });
 
-// --- Tab navigation ---
-const tabStrategies = document.getElementById("tab-strategies");
-const tabCalendar = document.getElementById("tab-calendar");
-tabStrategies.addEventListener("click",()=>{
-  tabStrategies.classList.add("active");
-  tabCalendar.classList.remove("active");
-  sectionStrategies.style.display="block";
-  sectionCalendar.style.display="none";
-});
-tabCalendar.addEventListener("click",()=>{
-  tabCalendar.classList.add("active");
-  tabStrategies.classList.remove("active");
-  sectionCalendar.style.display="block";
-  sectionStrategies.style.display="none";
-});
-
-// --- Strategy progress ---
+// --- Stratégie barre progression ---
 document.querySelectorAll(".strategy").forEach(strat=>{
-  const checkboxes = strat.querySelectorAll(".condition");
-  const progress = strat.querySelector(".progress-bar-inner");
-  const btn = strat.querySelector(".enterPosition");
+  const checkboxes=strat.querySelectorAll(".condition");
+  const progress=strat.querySelector(".progress-bar-inner");
+  const btn=strat.querySelector(".enterPosition");
   checkboxes.forEach(cb=>{
     cb.addEventListener("change",()=>{
       const total = checkboxes.length;
@@ -228,20 +238,19 @@ document.querySelectorAll(".strategy").forEach(strat=>{
   });
 });
 
-// --- Calendar logic ---
-let currentMonth = new Date().getMonth();
-let currentYear = new Date().getFullYear();
-let entries = {};
-
-const calendarEl = document.getElementById("calendar");
-const currentMonthLabel = document.getElementById("currentMonth");
-const prevMonthBtn = document.getElementById("prevMonth");
-const nextMonthBtn = document.getElementById("nextMonth");
+// --- Calendar ---
+let currentMonth=new Date().getMonth();
+let currentYear=new Date().getFullYear();
+let entries={};
+const calendarEl=document.getElementById("calendar");
+const currentMonthLabel=document.getElementById("currentMonth");
+const prevMonthBtn=document.getElementById("prevMonth");
+const nextMonthBtn=document.getElementById("nextMonth");
 
 function renderCalendar(month=currentMonth,year=currentYear){
   calendarEl.innerHTML="";
-  const firstDay = new Date(year,month,1).getDay();
-  const lastDate = new Date(year,month+1,0).getDate();
+  const firstDay=new Date(year,month,1).getDay();
+  const lastDate=new Date(year,month+1,0).getDate();
   const daysInWeek=["Dim","Lun","Mar","Mer","Jeu","Ven","Sam"];
   daysInWeek.forEach(d=>{
     const div=document.createElement("div");
@@ -265,6 +274,7 @@ function renderCalendar(month=currentMonth,year=currentYear){
       });
       div.style.background = total>=0?"#d4edda":"#f8d7da";
     }
+    div.addEventListener("click",()=>{document.getElementById("entryDate").value=dateStr; sectionCalendar.scrollIntoView({behavior:"smooth"});});
     calendarEl.appendChild(div);
   }
   currentMonthLabel.textContent = new Date(year,month).toLocaleString('fr-FR',{month:'long',year:'numeric'});
@@ -280,29 +290,26 @@ nextMonthBtn.addEventListener("click",()=>{
 });
 renderCalendar();
 
-// --- Add calendar entry ---
+// --- Ajouter entrée ---
 document.querySelector(".addEntry").addEventListener("click",()=>{
-  const date = document.getElementById("entryDate").value;
-  if(!date) return alert("Choisis une date");
-  const asset = document.getElementById("entryAsset").value;
-  const type = document.getElementById("entryType").value;
-  const price = parseFloat(document.getElementById("entryPrice").value);
-  const result = parseFloat(document.getElementById("entryResult").value);
-  const desc = document.getElementById("entryDescription").value;
-  const user = auth.currentUser;
-  if(!user) return alert("Connecte-toi d'abord");
-  if(!entries[date]) entries[date]=[];
+  const date=document.getElementById("entryDate").value;
+  if(!date)return alert("Choisis une date");
+  const asset=document.getElementById("entryAsset").value;
+  const type=document.getElementById("entryType").value;
+  const price=parseFloat(document.getElementById("entryPrice").value);
+  const result=parseFloat(document.getElementById("entryResult").value);
+  const desc=document.getElementById("entryDescription").value;
+  const user=auth.currentUser;
+  if(!user)return alert("Connecte-toi d'abord");
+  if(!entries[date])entries[date]=[];
   entries[date].push({asset,type,price,result,desc});
   renderCalendar();
-  db.collection("users").doc(user.uid).collection("journal").add({
-    date, asset, type, price, result, desc, userId:user.uid
-  });
+  db.collection("users").doc(user.uid).collection("journal").add({date,asset,type,price,result,desc,userId:user.uid});
   document.getElementById("entryAsset").value="";
   document.getElementById("entryPrice").value="";
   document.getElementById("entryResult").value="";
   document.getElementById("entryDescription").value="";
 });
 </script>
-
 </body>
 </html>
