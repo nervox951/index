@@ -10,14 +10,25 @@
 <script src="https://kit.fontawesome.com/a076d05399.js" crossorigin="anonymous"></script>
 <style>
 body, html{margin:0;padding:0;font-family:'Segoe UI',sans-serif;background:#f5f6fa;overflow-x:hidden;}
+/* Ecran accueil dynamique */
+#introScreen{position:fixed;top:0;left:0;width:100%;height:100%;background:#1a73e8;color:#fff;display:flex;justify-content:center;align-items:center;flex-direction:column;transition:transform 1s ease-out;z-index:100;}
+#introScreen.hide{transform:translateX(-100%);}
+#introScreen h1{font-size:3rem;margin:0;}
+#introScreen p{font-size:1.2rem;margin-top:1rem;text-align:center;max-width:600px;line-height:1.4;}
+
+/* Header et navigation */
 header{background:#1a73e8;color:#fff;padding:1rem;text-align:center;font-size:1.8rem;font-weight:bold;cursor:pointer;}
 nav{display:flex;justify-content:space-around;background:#e3e3e3;padding:0.5rem 0;position:sticky;top:0;z-index:10;}
 nav button{padding:0.6rem 1.2rem;border:none;border-radius:6px;font-weight:bold;cursor:pointer;transition:0.3s;}
 nav button.active{background:#1a73e8;color:#fff;}
+
+/* Sections */
 section{padding:1rem;}
 .strategy, .calendar-container{background:#fff;margin-bottom:1rem;padding:1rem;border-radius:10px;box-shadow:0 4px 12px rgba(0,0,0,0.15);}
 .progress-bar{height:20px;background:#eee;border-radius:10px;overflow:hidden;margin-top:0.5rem;}
 .progress-bar-inner{height:100%;background:#1a73e8;width:0%;text-align:center;color:#fff;line-height:20px;font-size:0.85rem;}
+
+/* Calendrier */
 .calendar{display:grid;grid-template-columns:repeat(7,1fr);gap:1px;background:#ccc;border-radius:8px;overflow:hidden;}
 .calendar div{background:#fff;min-height:80px;padding:0.4rem;position:relative;font-size:0.9rem;cursor:pointer;transition:0.3s;}
 .calendar div:hover{background:#e0f0ff;}
@@ -26,46 +37,33 @@ section{padding:1rem;}
 .entry i{margin-right:5px;}
 .entry .gain{color:green;font-weight:bold;}
 .entry .loss{color:red;font-weight:bold;}
+
+/* Inputs */
 input,textarea,select{width:100%;padding:0.4rem;margin:0.2rem 0;border-radius:5px;border:1px solid #ccc;}
-button.addEntry,button.authButton,#popupSignUpBtn,#googleSignUpBtn{background:#1a73e8;color:#fff;padding:0.5rem;border:none;border-radius:6px;cursor:pointer;width:100%;margin-top:0.5rem;transition:0.2s;}
-button.addEntry:hover,button.authButton:hover,#popupSignUpBtn:hover,#googleSignUpBtn:hover{background:#155ab6;}
+button.addEntry,button.authButton{background:#1a73e8;color:#fff;padding:0.5rem;border:none;border-radius:6px;cursor:pointer;width:100%;margin-top:0.5rem;transition:0.2s;}
+button.addEntry:hover,button.authButton:hover{background:#155ab6;}
+
+/* Auth container */
 #authContainer{max-width:400px;margin:1rem auto;background:#fff;padding:1rem;border-radius:10px;box-shadow:0 4px 12px rgba(0,0,0,0.15);}
-.popup{position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.5);display:none;align-items:center;justify-content:center;z-index:50;}
-.popup-content{background:#fff;padding:2rem;border-radius:10px;max-width:400px;width:90%;position:relative;animation:fadeIn 0.5s;}
-.close-popup{position:absolute;top:10px;right:10px;cursor:pointer;font-weight:bold;font-size:1.2rem;}
-#bookCover{position:fixed;top:0;left:0;width:100%;height:100%;background:#1a73e8;display:flex;justify-content:center;align-items:center;z-index:100;cursor:pointer;transition:transform 1s ease-in-out;}
-#bookCover h1{color:#fff;font-size:3rem;letter-spacing:2px;text-align:center;transform:scale(1);transition:transform 1s;}
-#bookCover.open{transform:scaleX(0);transform-origin:left;}
-#bookCover.open h1{transform:scale(0);}
-@keyframes fadeIn{from{opacity:0;}to{opacity:1;}}
+#signOutBtn{margin-top:0.5rem;}
 </style>
 </head>
 <body>
 
-<div id="bookCover"><h1>Trade Book</h1></div>
+<div id="introScreen">
+  <h1>Trade Board Pro</h1>
+  <p>Bienvenue sur votre application de suivi de stratégies et journal de trading.<br>Planifiez, suivez vos positions et analysez vos performances facilement.<br>"Le succès en trading vient de la discipline et de l'organisation."</p>
+</div>
 
 <header id="mainHeader">Trade Board Pro</header>
-
-<div class="popup" id="popupSignUp">
-  <div class="popup-content">
-    <span class="close-popup" id="closePopup">&times;</span>
-    <h2>Créer un compte</h2>
-    <input type="text" id="firstName" placeholder="Prénom">
-    <input type="text" id="lastName" placeholder="Nom">
-    <input type="email" id="popupEmail" placeholder="Email">
-    <input type="password" id="popupPassword" placeholder="Mot de passe">
-    <input type="text" id="phoneNumber" placeholder="Téléphone (optionnel)">
-    <button id="popupSignUpBtn">Créer le compte</button>
-    <button id="googleSignUpBtn">Se connecter avec Google</button>
-  </div>
-</div>
 
 <div id="authContainer">
   <h2>Connexion</h2>
   <input type="email" id="authEmail" placeholder="Adresse e-mail">
   <input type="password" id="authPassword" placeholder="Mot de passe">
   <button class="authButton" id="signInBtn">Se connecter</button>
-  <button class="authButton" id="showSignUp">Créer un compte</button>
+  <button class="authButton" id="signUpBtn">Créer un compte</button>
+  <button class="authButton" id="googleSignInBtn">Se connecter avec Google</button>
   <button class="authButton" id="signOutBtn" style="display:none;">Se déconnecter</button>
   <div id="emailWarning" style="color:red;font-size:0.85rem;display:none;margin-top:0.5rem;">Email non vérifié !</div>
 </div>
@@ -132,32 +130,23 @@ firebase.initializeApp(firebaseConfig);
 const auth = firebase.auth();
 const db = firebase.firestore();
 
-// --- Livre accueil ---
-const bookCover = document.getElementById("book
-// --- Livre d'accueil ---
-const bookCover = document.getElementById("bookCover");
-bookCover.addEventListener("click", () => {
-  bookCover.classList.add("open");
-  setTimeout(() => {
-    bookCover.style.display = "none";
-    sectionStrategies.style.display = "block";
-    mainNav.style.display = "flex";
-  }, 1000);
-});
+// --- Intro dynamique ---
+const introScreen = document.getElementById("introScreen");
+setTimeout(()=>{introScreen.classList.add("hide");setTimeout(()=>{introScreen.style.display="none";},1000);},2000);
 
 // --- Sections et onglets ---
 const mainNav = document.getElementById("mainNav");
 const sectionStrategies = document.getElementById("section-strategies");
 const sectionCalendar = document.getElementById("section-calendar");
-document.getElementById("tab-strategies").addEventListener("click", () => {
-  sectionStrategies.style.display = "block";
-  sectionCalendar.style.display = "none";
+document.getElementById("tab-strategies").addEventListener("click",()=>{
+  sectionStrategies.style.display="block";
+  sectionCalendar.style.display="none";
   document.getElementById("tab-strategies").classList.add("active");
   document.getElementById("tab-calendar").classList.remove("active");
 });
-document.getElementById("tab-calendar").addEventListener("click", () => {
-  sectionStrategies.style.display = "none";
-  sectionCalendar.style.display = "block";
+document.getElementById("tab-calendar").addEventListener("click",()=>{
+  sectionStrategies.style.display="none";
+  sectionCalendar.style.display="block";
   document.getElementById("tab-calendar").classList.add("active");
   document.getElementById("tab-strategies").classList.remove("active");
 });
@@ -166,86 +155,87 @@ document.getElementById("tab-calendar").addEventListener("click", () => {
 const authContainer = document.getElementById("authContainer");
 const signOutBtn = document.getElementById("signOutBtn");
 const emailWarning = document.getElementById("emailWarning");
+const googleSignInBtn = document.getElementById("googleSignInBtn");
 
-auth.onAuthStateChanged(user => {
-  if (user) {
-    if(!user.emailVerified){
-      emailWarning.style.display = "block";
-      auth.signOut();
+auth.onAuthStateChanged(user=>{
+  if(user){
+    if(!user.emailVerified && !user.providerData.some(p=>p.providerId==="google.com")){
+      emailWarning.style.display="block"; 
+      auth.signOut(); 
       return;
-    } else {
-      emailWarning.style.display = "none";
     }
-    authContainer.style.display = "none";
-    mainNav.style.display = "flex";
-    sectionStrategies.style.display = "block";
-    sectionCalendar.style.display = "none";
-    signOutBtn.style.display = "block";
+    emailWarning.style.display="none";
+    authContainer.style.display="none";
+    mainNav.style.display="flex";
+    sectionStrategies.style.display="block";
+    sectionCalendar.style.display="none";
+    signOutBtn.style.display="block";
     loadUserData(user.uid);
   } else {
-    authContainer.style.display = "block";
-    mainNav.style.display = "none";
-    signOutBtn.style.display = "none";
-    sectionStrategies.style.display = "none";
-    sectionCalendar.style.display = "none";
+    authContainer.style.display="block";
+    mainNav.style.display="none";
+    signOutBtn.style.display="none";
+    sectionStrategies.style.display="none";
+    sectionCalendar.style.display="none";
   }
 });
 
-document.getElementById("signInBtn").addEventListener("click", () => {
-  const email = document.getElementById("authEmail").value;
-  const password = document.getElementById("authPassword").value;
-  auth.signInWithEmailAndPassword(email,password)
-    .catch(err=>alert(err.message));
+// Email/Password
+document.getElementById("signInBtn").addEventListener("click",()=>{
+  const email=document.getElementById("authEmail").value;
+  const password=document.getElementById("authPassword").value;
+  auth.signInWithEmailAndPassword(email,password).catch(err=>alert(err.message));
 });
-
-signOutBtn.addEventListener("click", () => auth.signOut());
-
-document.getElementById("showSignUp").addEventListener("click", () => {
-  document.getElementById("popupSignUp").style.display="flex";
-});
-
-document.getElementById("closePopup").addEventListener("click", () => {
-  document.getElementById("popupSignUp").style.display="none";
-});
-
-document.getElementById("popupSignUpBtn").addEventListener("click", async () => {
-  const email = document.getElementById("popupEmail").value;
-  const password = document.getElementById("popupPassword").value;
-  const firstName = document.getElementById("firstName").value;
-  const lastName = document.getElementById("lastName").value;
-  const phone = document.getElementById("phoneNumber").value;
+document.getElementById("signUpBtn").addEventListener("click",async()=>{
+  const email=prompt("Email:");
+  const password=prompt("Mot de passe:");
   try{
-    const userCredential = await auth.createUserWithEmailAndPassword(email,password);
-    const user = userCredential.user;
+    const userCredential=await auth.createUserWithEmailAndPassword(email,password);
+    const user=userCredential.user;
     await user.sendEmailVerification();
-    await db.collection("users").doc(user.uid).set({firstName,lastName,email,phone});
-    alert("Compte créé ! Vérifiez votre email pour activer le compte.");
-    document.getElementById("popupSignUp").style.display="none";
-  } catch(err){alert(err.message);}
+    alert("Compte créé ! Vérifiez votre email.");
+  }catch(err){alert(err.message);}
 });
 
-// Connexion avec Google
-document.getElementById("googleSignUpBtn").addEventListener("click", async () => {
-  const provider = new firebase.auth.GoogleAuthProvider();
-  try{
-    const result = await auth.signInWithPopup(provider);
-    const user = result.user;
-    await db.collection("users").doc(user.uid).set({email:user.email,name:user.displayName},{merge:true});
-  } catch(err){alert(err.message);}
+// Google Sign-In
+googleSignInBtn.addEventListener("click", async () => {
+    const provider = new firebase.auth.GoogleAuthProvider();
+    try {
+        const result = await auth.signInWithPopup(provider);
+        const user = result.user;
+        const userDoc = await db.collection("users").doc(user.uid).get();
+        if(!userDoc.exists){
+            await db.collection("users").doc(user.uid).set({
+                email: user.email,
+                displayName: user.displayName,
+                createdAt: firebase.firestore.FieldValue.serverTimestamp()
+            });
+        }
+        authContainer.style.display="none";
+        mainNav.style.display="flex";
+        sectionStrategies.style.display="block";
+        sectionCalendar.style.display="none";
+        signOutBtn.style.display="block";
+        loadUserData(user.uid);
+    } catch(err){
+        alert("Erreur connexion Google : " + err.message);
+    }
 });
 
-// --- Stratégies (progression automatique) ---
-document.querySelectorAll(".strategy").forEach(strat => {
-  const conditions = strat.querySelectorAll(".condition");
-  const progressBar = strat.querySelector(".progress-bar-inner");
-  const enterBtn = strat.querySelector(".enterPosition");
-  conditions.forEach(cond => cond.addEventListener("change", ()=>{
-    const total = conditions.length;
-    const checked = strat.querySelectorAll(".condition:checked").length;
-    const percent = Math.round((checked/total)*100);
-    progressBar.style.width = percent+"%";
-    progressBar.textContent = percent+"%";
-    enterBtn.disabled = checked!==total;
+signOutBtn.addEventListener("click",()=>auth.signOut());
+
+// --- Stratégies ---
+document.querySelectorAll(".strategy").forEach(strat=>{
+  const conditions=strat.querySelectorAll(".condition");
+  const progressBar=strat.querySelector(".progress-bar-inner");
+  const enterBtn=strat.querySelector(".enterPosition");
+  conditions.forEach(cond=>cond.addEventListener("change",()=>{
+    const total=conditions.length;
+    const checked=strat.querySelectorAll(".condition:checked").length;
+    const percent=Math.round((checked/total)*100);
+    progressBar.style.width=percent+"%";
+    progressBar.textContent=percent+"%";
+    enterBtn.disabled=checked!==total;
   }));
 });
 
@@ -260,18 +250,21 @@ const entryTypeInput = document.getElementById("entryType");
 const entryPriceInput = document.getElementById("entryPrice");
 const entryResultInput = document.getElementById("entryResult");
 const entryDescriptionInput = document.getElementById("entryDescription");
-
 let entries = {};
 let today = new Date();
 let currentMonth = today.getMonth();
 let currentYear = today.getFullYear();
 
-function renderCalendar(month=currentMonth, year=currentYear){
+function renderCalendar(month=currentMonth,year=currentYear){
   calendarEl.innerHTML="";
   const firstDay = new Date(year,month,1).getDay();
   const lastDate = new Date(year,month+1,0).getDate();
-  const daysInWeek = ["Dim","Lun","Mar","Mer","Jeu","Ven","Sam"];
-  daysInWeek.forEach(d=>{const div=document.createElement("div"); div.style.fontWeight="bold"; div.style.background="#e3e3e3"; div.textContent=d; calendarEl.appendChild(div);});
+  const daysInWeek=["Dim","Lun","Mar","Mer","Jeu","Ven","Sam"];
+  daysInWeek.forEach(d=>{
+    const div=document.createElement("div");
+    div.style.fontWeight="bold"; div.style.background="#e3e3e3"; div.textContent=d;
+    calendarEl.appendChild(div);
+  });
   for(let i=0;i<firstDay;i++) calendarEl.appendChild(document.createElement("div"));
   for(let d=1;d<=lastDate;d++){
     const div=document.createElement("div");
@@ -304,16 +297,16 @@ nextMonthBtn.addEventListener("click",()=>{
   renderCalendar();
 });
 
-document.querySelector(".addEntry").addEventListener("click", async () => {
-  const user = auth.currentUser;
+document.querySelector(".addEntry").addEventListener("click",async()=>{
+  const user=auth.currentUser;
   if(!user){alert("Connecte-toi !"); return;}
-  const date = entryDateInput.value;
+  const date=entryDateInput.value;
   if(!date){alert("Choisis une date !"); return;}
-  const asset = entryAssetInput.value;
-  const type = entryTypeInput.value;
-  const price = parseFloat(entryPriceInput.value);
-  const result = parseFloat(entryResultInput.value);
-  const desc = entryDescriptionInput.value;
+  const asset=entryAssetInput.value;
+  const type=entryTypeInput.value;
+  const price=parseFloat(entryPriceInput.value);
+  const result=parseFloat(entryResultInput.value);
+  const desc=entryDescriptionInput.value;
   if(!entries[date]) entries[date]=[];
   entries[date].push({asset,type,price,result,desc});
   renderCalendar();
@@ -321,9 +314,8 @@ document.querySelector(".addEntry").addEventListener("click", async () => {
   entryAssetInput.value=""; entryPriceInput.value=""; entryResultInput.value=""; entryDescriptionInput.value="";
 });
 
-// --- Charger données utilisateur ---
 async function loadUserData(uid){
-  entries = {};
+  entries={};
   const snapshot = await db.collection("users").doc(uid).collection("journal").get();
   snapshot.forEach(doc=>{
     const data = doc.data();
