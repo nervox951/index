@@ -7,47 +7,70 @@
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+<script src="https://kit.fontawesome.com/a076d05399.js" crossorigin="anonymous"></script>
 <style>
-body { font-family: Arial, sans-serif; margin:0; padding:0; background:#f4f4f4;}
-header { background:#1a73e8; color:#fff; padding:1rem; text-align:center; font-size:1.5rem;}
-nav { display:flex; justify-content:space-around; background:#e2e2e2; padding:0.5rem 0;}
-nav button { padding:0.5rem 1rem; border:none; border-radius:5px; cursor:pointer; font-weight:bold;}
-nav button.active { background:#1a73e8; color:#fff;}
-section { padding:1rem;}
-.strategy { background:#fff; margin-bottom:1rem; padding:1rem; border-radius:8px; box-shadow:0 2px 5px rgba(0,0,0,0.1);}
-.progress-bar { height:20px; background:#ddd; border-radius:10px; overflow:hidden; margin-top:0.5rem;}
-.progress-bar-inner { height:100%; background:#1a73e8; width:0%; text-align:center; color:#fff; line-height:20px; font-size:0.9rem;}
-.calendar { display:grid; grid-template-columns:repeat(7, 1fr); gap:1px; background:#ccc;}
-.calendar div { background:#fff; min-height:80px; padding:0.5rem; position:relative;}
-.calendar div span { position:absolute; top:5px; right:5px; font-size:0.8rem; font-weight:bold;}
-.entry { margin-top:1.5rem; font-size:0.8rem;}
-input, textarea, select { width:100%; padding:0.3rem; margin:0.2rem 0; border-radius:4px; border:1px solid #ccc;}
-button.addEntry, button.authButton { background:#1a73e8; color:#fff; padding:0.5rem; border:none; border-radius:5px; cursor:pointer; width:100%; margin-top:0.5rem;}
-#authContainer { max-width:400px; margin:1rem auto; background:#fff; padding:1rem; border-radius:8px; box-shadow:0 2px 5px rgba(0,0,0,0.1);}
+body{margin:0;padding:0;font-family:'Segoe UI',sans-serif;background:#f5f6fa;}
+header{background:#1a73e8;color:#fff;padding:1rem;text-align:center;font-size:1.8rem;font-weight:bold;}
+nav{display:flex;justify-content:space-around;background:#e3e3e3;padding:0.5rem 0;position:sticky;top:0;z-index:10;}
+nav button{padding:0.6rem 1.2rem;border:none;border-radius:6px;font-weight:bold;cursor:pointer;transition:0.3s;}
+nav button.active{background:#1a73e8;color:#fff;}
+section{padding:1rem;}
+.strategy, .calendar-container{background:#fff;margin-bottom:1rem;padding:1rem;border-radius:10px;box-shadow:0 4px 8px rgba(0,0,0,0.1);}
+.progress-bar{height:20px;background:#eee;border-radius:10px;overflow:hidden;margin-top:0.5rem;}
+.progress-bar-inner{height:100%;background:#1a73e8;width:0%;text-align:center;color:#fff;line-height:20px;font-size:0.85rem;}
+.calendar{display:grid;grid-template-columns:repeat(7,1fr);gap:1px;background:#ccc;border-radius:8px;overflow:hidden;}
+.calendar div{background:#fff;min-height:80px;padding:0.4rem;position:relative;font-size:0.9rem;}
+.calendar div span{position:absolute;top:3px;right:5px;font-size:0.75rem;font-weight:bold;}
+.entry{margin-top:1.2rem;font-size:0.75rem;display:flex;align-items:center;}
+.entry i{margin-right:5px;}
+input,textarea,select{width:100%;padding:0.4rem;margin:0.2rem 0;border-radius:5px;border:1px solid #ccc;}
+button.addEntry, button.authButton{background:#1a73e8;color:#fff;padding:0.5rem;border:none;border-radius:6px;cursor:pointer;width:100%;margin-top:0.5rem;transition:0.2s;}
+button.addEntry:hover,button.authButton:hover{background:#155ab6;}
+#authContainer{max-width:400px;margin:1rem auto;background:#fff;padding:1rem;border-radius:10px;box-shadow:0 4px 8px rgba(0,0,0,0.1);}
+.popup{position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.5);display:none;align-items:center;justify-content:center;}
+.popup-content{background:#fff;padding:2rem;border-radius:10px;max-width:400px;width:90%;position:relative;}
+.close-popup{position:absolute;top:10px;right:10px;cursor:pointer;font-weight:bold;font-size:1.2rem;}
+.entry .gain{color:green;font-weight:bold;}
+.entry .loss{color:red;font-weight:bold;}
 </style>
 </head>
 <body>
 
 <header>Trade Board Pro</header>
 
+<!-- Popup pour créer un compte -->
+<div class="popup" id="popupSignUp">
+  <div class="popup-content">
+    <span class="close-popup" id="closePopup">&times;</span>
+    <h2>Créer un compte</h2>
+    <input type="text" id="firstName" placeholder="Prénom">
+    <input type="text" id="lastName" placeholder="Nom">
+    <input type="email" id="popupEmail" placeholder="Email">
+    <input type="password" id="popupPassword" placeholder="Mot de passe">
+    <input type="text" id="phoneNumber" placeholder="Téléphone (optionnel)">
+    <button id="popupSignUpBtn">Créer le compte</button>
+    <button id="googleSignUpBtn">Se connecter avec Google</button>
+  </div>
+</div>
+
 <div id="authContainer">
-  <h2>Connexion / Inscription</h2>
+  <h2>Connexion</h2>
   <input type="email" id="authEmail" placeholder="Adresse e-mail">
   <input type="password" id="authPassword" placeholder="Mot de passe">
-  <button class="authButton" id="signUpBtn">Créer un compte</button>
   <button class="authButton" id="signInBtn">Se connecter</button>
+  <button class="authButton" id="showSignUp">Créer un compte</button>
   <button class="authButton" id="signOutBtn" style="display:none;">Se déconnecter</button>
 </div>
 
 <nav style="display:none;" id="mainNav">
   <button id="tab-strategies" class="active">Stratégies</button>
-  <button id="tab-calendar">Calendrier / Journal</button>
+  <button id="tab-calendar">Calendrier</button>
 </nav>
 
 <section id="section-strategies" style="display:none;">
   <h2>Mes stratégies</h2>
   <div class="strategy">
-    <strong>Exemple stratégie</strong>
+    <strong>Stratégie Exemple</strong>
     <div>
       <label><input type="checkbox" class="condition"> Condition 1</label><br>
       <label><input type="checkbox" class="condition"> Condition 2</label><br>
@@ -60,10 +83,22 @@ button.addEntry, button.authButton { background:#1a73e8; color:#fff; padding:0.5
 
 <section id="section-calendar" style="display:none;">
   <h2>Calendrier & Journal</h2>
-  <div id="calendar" class="calendar"></div>
+  <div style="display:flex;justify-content:space-between;margin-bottom:0.5rem;">
+    <button id="prevMonth">&lt; Mois précédent</button>
+    <span id="currentMonth" style="font-weight:bold;"></span>
+    <button id="nextMonth">Mois suivant &gt;</button>
+  </div>
+  <div class="calendar" id="calendar"></div>
+
   <div id="entryForm" style="margin-top:1rem;">
     <input type="date" id="entryDate">
-    <input type="text" id="entryAsset" placeholder="Actif (ex: EURUSD)">
+    <select id="entryAsset">
+      <option value="EURUSD">EURUSD</option>
+      <option value="GBPUSD">GBPUSD</option>
+      <option value="BTCUSD">BTCUSD</option>
+      <option value="ETHUSD">ETHUSD</option>
+      <option value="USDJPY">USDJPY</option>
+    </select>
     <select id="entryType"><option value="achat">Achat</option><option value="vente">Vente</option></select>
     <input type="number" id="entryPrice" placeholder="Prix">
     <input type="number" id="entryResult" placeholder="Résultat (gain/perte)">
@@ -87,47 +122,64 @@ firebase.initializeApp(firebaseConfig);
 const auth = firebase.auth();
 const db = firebase.firestore();
 
-// --- Auth ---
-const signUpBtn = document.getElementById("signUpBtn");
+// --- Popup logique ---
+const popup = document.getElementById("popupSignUp");
+const showSignUp = document.getElementById("showSignUp");
+const closePopup = document.getElementById("closePopup");
+showSignUp.addEventListener("click",()=>popup.style.display="flex");
+closePopup.addEventListener("click",()=>popup.style.display="none");
+
+// --- Création de compte popup ---
+const popupSignUpBtn = document.getElementById("popupSignUpBtn");
+popupSignUpBtn.addEventListener("click", async ()=>{
+  const email = document.getElementById("popupEmail").value;
+  const password = document.getElementById("popupPassword").value;
+  const firstName = document.getElementById("firstName").value;
+  const lastName = document.getElementById("lastName").value;
+  const phone = document.getElementById("phoneNumber").value;
+  try {
+    const userCredential = await auth.createUserWithEmailAndPassword(email,password);
+    await userCredential.user.updateProfile({displayName:firstName+" "+lastName, phoneNumber: phone});
+    await userCredential.user.sendEmailVerification();
+    alert("Compte créé ! Vérifie ton email.");
+    popup.style.display="none";
+  } catch(err){alert(err.message);}
+});
+
+// --- Google Sign-In ---
+const googleSignUpBtn = document.getElementById("googleSignUpBtn");
+googleSignUpBtn.addEventListener("click", async ()=>{
+  const provider = new firebase.auth.GoogleAuthProvider();
+  try { await auth.signInWithPopup(provider); popup.style.display="none"; } 
+  catch(err){alert(err.message);}
+});
+
+// --- Connexion classique ---
 const signInBtn = document.getElementById("signInBtn");
+signInBtn.addEventListener("click", async ()=>{
+  const email = document.getElementById("authEmail").value;
+  const password = document.getElementById("authPassword").value;
+  try {
+    const userCredential = await auth.signInWithEmailAndPassword(email,password);
+    if(!userCredential.user.emailVerified){
+      alert("Vérifie ton email !");
+      auth.signOut();
+      return;
+    }
+  } catch(err){alert(err.message);}
+});
+
 const signOutBtn = document.getElementById("signOutBtn");
+signOutBtn.addEventListener("click",()=>auth.signOut());
+
+// --- AuthState ---
 const authContainer = document.getElementById("authContainer");
 const mainNav = document.getElementById("mainNav");
 const sectionStrategies = document.getElementById("section-strategies");
 const sectionCalendar = document.getElementById("section-calendar");
 
-signUpBtn.addEventListener("click", async () => {
-  const email = document.getElementById("authEmail").value;
-  const password = document.getElementById("authPassword").value;
-  try {
-    const userCredential = await auth.createUserWithEmailAndPassword(email, password);
-    await userCredential.user.sendEmailVerification();
-    alert("Compte créé ! Vérifie ton email avant de te connecter.");
-  } catch(err) {
-    alert(err.message);
-  }
-});
-
-signInBtn.addEventListener("click", async () => {
-  const email = document.getElementById("authEmail").value;
-  const password = document.getElementById("authPassword").value;
-  try {
-    const userCredential = await auth.signInWithEmailAndPassword(email, password);
-    if(!userCredential.user.emailVerified){
-      alert("Vérifie ton email avant de te connecter !");
-      auth.signOut();
-      return;
-    }
-  } catch(err) {
-    alert(err.message);
-  }
-});
-
-signOutBtn.addEventListener("click", () => auth.signOut());
-
-// --- Auth state listener ---
-auth.onAuthStateChanged(user => {
-  console.log("User:", user);
+auth.onAuthStateChanged(user=>{
+  console.log("User:",user);
   if(user){
     authContainer.style.display="none";
     mainNav.style.display="flex";
@@ -137,23 +189,22 @@ auth.onAuthStateChanged(user => {
   } else {
     authContainer.style.display="block";
     mainNav.style.display="none";
-    signOutBtn.style.display="none";
     sectionStrategies.style.display="none";
     sectionCalendar.style.display="none";
+    signOutBtn.style.display="none";
   }
 });
 
 // --- Tab navigation ---
 const tabStrategies = document.getElementById("tab-strategies");
 const tabCalendar = document.getElementById("tab-calendar");
-
-tabStrategies.addEventListener("click", ()=>{
+tabStrategies.addEventListener("click",()=>{
   tabStrategies.classList.add("active");
   tabCalendar.classList.remove("active");
   sectionStrategies.style.display="block";
   sectionCalendar.style.display="none";
 });
-tabCalendar.addEventListener("click", ()=>{
+tabCalendar.addEventListener("click",()=>{
   tabCalendar.classList.add("active");
   tabStrategies.classList.remove("active");
   sectionCalendar.style.display="block";
@@ -166,7 +217,7 @@ document.querySelectorAll(".strategy").forEach(strat=>{
   const progress = strat.querySelector(".progress-bar-inner");
   const btn = strat.querySelector(".enterPosition");
   checkboxes.forEach(cb=>{
-    cb.addEventListener("change", ()=>{
+    cb.addEventListener("change",()=>{
       const total = checkboxes.length;
       const checked = strat.querySelectorAll(".condition:checked").length;
       const percent = Math.round(checked/total*100);
@@ -177,45 +228,60 @@ document.querySelectorAll(".strategy").forEach(strat=>{
   });
 });
 
-// --- Calendar ---
-const calendarEl = document.getElementById("calendar");
+// --- Calendar logic ---
+let currentMonth = new Date().getMonth();
+let currentYear = new Date().getFullYear();
 let entries = {};
 
-function renderCalendar(month=new Date().getMonth(), year=new Date().getFullYear()){
+const calendarEl = document.getElementById("calendar");
+const currentMonthLabel = document.getElementById("currentMonth");
+const prevMonthBtn = document.getElementById("prevMonth");
+const nextMonthBtn = document.getElementById("nextMonth");
+
+function renderCalendar(month=currentMonth,year=currentYear){
   calendarEl.innerHTML="";
-  const firstDay = new Date(year, month, 1).getDay();
-  const lastDate = new Date(year, month+1, 0).getDate();
-  const daysInWeek = ["Dim","Lun","Mar","Mer","Jeu","Ven","Sam"];
+  const firstDay = new Date(year,month,1).getDay();
+  const lastDate = new Date(year,month+1,0).getDate();
+  const daysInWeek=["Dim","Lun","Mar","Mer","Jeu","Ven","Sam"];
   daysInWeek.forEach(d=>{
-    const div = document.createElement("div");
-    div.style.fontWeight="bold";
-    div.style.background="#e2e2e2";
-    div.textContent=d;
+    const div=document.createElement("div");
+    div.style.fontWeight="bold"; div.style.background="#e3e3e3"; div.textContent=d;
     calendarEl.appendChild(div);
   });
-  for(let i=0;i<firstDay;i++){
-    const div = document.createElement("div");
-    calendarEl.appendChild(div);
-  }
+  for(let i=0;i<firstDay;i++){calendarEl.appendChild(document.createElement("div"));}
   for(let d=1;d<=lastDate;d++){
-    const div = document.createElement("div");
+    const div=document.createElement("div");
+    const dateStr=`${year}-${String(month+1).padStart(2,"0")}-${String(d).padStart(2,"0")}`;
     div.textContent=d;
-    const dateStr = `${year}-${String(month+1).padStart(2,"0")}-${String(d).padStart(2,"0")}`;
     if(entries[dateStr]){
+      let total=0;
       entries[dateStr].forEach(en=>{
-        const eDiv = document.createElement("div");
+        const eDiv=document.createElement("div");
         eDiv.className="entry";
-        eDiv.textContent=`${en.asset} (${en.type}) ${en.result>0?"+":"-"}${en.result}`;
+        const icon = en.type==="achat"?"fa-arrow-up":"fa-arrow-down";
+        eDiv.innerHTML=`<i class="fas ${icon}"></i>${en.asset} ${en.result>0?'<span class="gain">+'+en.result+'</span>':'<span class="loss">'+en.result+'</span>'}`;
+        total+=en.result;
         div.appendChild(eDiv);
       });
+      div.style.background = total>=0?"#d4edda":"#f8d7da";
     }
     calendarEl.appendChild(div);
   }
+  currentMonthLabel.textContent = new Date(year,month).toLocaleString('fr-FR',{month:'long',year:'numeric'});
 }
+
+prevMonthBtn.addEventListener("click",()=>{
+  currentMonth--; if(currentMonth<0){currentMonth=11; currentYear--;}
+  renderCalendar(currentMonth,currentYear);
+});
+nextMonthBtn.addEventListener("click",()=>{
+  currentMonth++; if(currentMonth>11){currentMonth=0; currentYear++;}
+  renderCalendar(currentMonth,currentYear);
+});
 renderCalendar();
 
 // --- Add calendar entry ---
-document.querySelector(".addEntry").addEventListener("click", ()=>{
+document.querySelector(".addEntry").addEventListener("click",()=>{
   const date = document.getElementById("entryDate").value;
   if(!date) return alert("Choisis une date");
   const asset = document.getElementById("entryAsset").value;
