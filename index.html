@@ -4,7 +4,6 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Trade Board Pro</title>
-<!-- Firebase SDK -->
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
@@ -94,49 +93,59 @@ const signInBtn = document.getElementById("signInBtn");
 const signOutBtn = document.getElementById("signOutBtn");
 const authContainer = document.getElementById("authContainer");
 const mainNav = document.getElementById("mainNav");
+const sectionStrategies = document.getElementById("section-strategies");
+const sectionCalendar = document.getElementById("section-calendar");
 
-signUpBtn.addEventListener("click", ()=>{
+signUpBtn.addEventListener("click", async () => {
   const email = document.getElementById("authEmail").value;
   const password = document.getElementById("authPassword").value;
-  auth.createUserWithEmailAndPassword(email, password)
-  .then(()=>alert("Compte créé !"))
-  .catch(err=>alert(err.message));
+  try {
+    const userCredential = await auth.createUserWithEmailAndPassword(email, password);
+    await userCredential.user.sendEmailVerification();
+    alert("Compte créé ! Vérifie ton email avant de te connecter.");
+  } catch(err) {
+    alert(err.message);
+  }
 });
 
-signInBtn.addEventListener("click", ()=>{
+signInBtn.addEventListener("click", async () => {
   const email = document.getElementById("authEmail").value;
   const password = document.getElementById("authPassword").value;
-  auth.signInWithEmailAndPassword(email, password)
-  .catch(err=>alert(err.message));
+  try {
+    const userCredential = await auth.signInWithEmailAndPassword(email, password);
+    if(!userCredential.user.emailVerified){
+      alert("Vérifie ton email avant de te connecter !");
+      auth.signOut();
+      return;
+    }
+  } catch(err) {
+    alert(err.message);
+  }
 });
 
-signOutBtn.addEventListener("click", ()=>{
-  auth.signOut();
-});
+signOutBtn.addEventListener("click", () => auth.signOut());
 
-// --- Auth state listener (avec console.log) ---
+// --- Auth state listener ---
 auth.onAuthStateChanged(user => {
   console.log("User:", user);
   if(user){
     authContainer.style.display="none";
     mainNav.style.display="flex";
-    document.getElementById("section-strategies").style.display="block";
-    document.getElementById("section-calendar").style.display="none";
+    sectionStrategies.style.display="block";
+    sectionCalendar.style.display="none";
     signOutBtn.style.display="block";
   } else {
     authContainer.style.display="block";
     mainNav.style.display="none";
     signOutBtn.style.display="none";
-    document.getElementById("section-strategies").style.display="none";
-    document.getElementById("section-calendar").style.display="none";
+    sectionStrategies.style.display="none";
+    sectionCalendar.style.display="none";
   }
 });
 
 // --- Tab navigation ---
 const tabStrategies = document.getElementById("tab-strategies");
 const tabCalendar = document.getElementById("tab-calendar");
-const sectionStrategies = document.getElementById("section-strategies");
-const sectionCalendar = document.getElementById("section-calendar");
 
 tabStrategies.addEventListener("click", ()=>{
   tabStrategies.classList.add("active");
@@ -176,18 +185,28 @@ function renderCalendar(month=new Date().getMonth(), year=new Date().getFullYear
   calendarEl.innerHTML="";
   const firstDay = new Date(year, month, 1).getDay();
   const lastDate = new Date(year, month+1, 0).getDate();
-  for(let i=0;i<firstDay;i++){calendarEl.appendChild(document.createElement("div"));}
-  for(let d=1;d<=lastDate;d++){
-    const day = new Date(year, month, d);
+  const daysInWeek = ["Dim","Lun","Mar","Mer","Jeu","Ven","Sam"];
+  daysInWeek.forEach(d=>{
     const div = document.createElement("div");
-    div.innerHTML = `<span>${d}</span>`;
-    const key = day.toISOString().slice(0,10);
-    if(entries[key]){
-      entries[key].forEach(e=>{
-        const entryDiv = document.createElement("div");
-        entryDiv.className="entry";
-        entryDiv.textContent=`${e.asset} ${e.type} ${e.result>0?"+":"-"}${e.result}`;
-        div.appendChild(entryDiv);
+    div.style.fontWeight="bold";
+    div.style.background="#e2e2e2";
+    div.textContent=d;
+    calendarEl.appendChild(div);
+  });
+  for(let i=0;i<firstDay;i++){
+    const div = document.createElement("div");
+    calendarEl.appendChild(div);
+  }
+  for(let d=1;d<=lastDate;d++){
+    const div = document.createElement("div");
+    div.textContent=d;
+    const dateStr = `${year}-${String(month+1).padStart(2,"0")}-${String(d).padStart(2,"0")}`;
+    if(entries[dateStr]){
+      entries[dateStr].forEach(en=>{
+        const eDiv = document.createElement("div");
+        eDiv.className="entry";
+        eDiv.textContent=`${en.asset} (${en.type}) ${en.result>0?"+":"-"}${en.result}`;
+        div.appendChild(eDiv);
       });
     }
     calendarEl.appendChild(div);
