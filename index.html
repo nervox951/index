@@ -81,9 +81,8 @@ const firebaseConfig = {
   projectId: "perso-journaling",
   storageBucket: "perso-journaling.firebasestorage.app",
   messagingSenderId: "660360215177",
-  appId: "1:660360215177:web:abcd1234efgh5678",
-  measurementId: "G-1A2B3C4D5E"
-      // optionnel
+  appId: "1:660360215177:web:WEBAPPID_A_REMPLACER",
+  measurementId: "G-MEASUREMENTID_A_REMPLACER"
 };
 firebase.initializeApp(firebaseConfig);
 const auth = firebase.auth();
@@ -115,14 +114,16 @@ signOutBtn.addEventListener("click", ()=>{
   auth.signOut();
 });
 
-auth.onAuthStateChanged(user=>{
+// --- Auth state listener (avec console.log) ---
+auth.onAuthStateChanged(user => {
+  console.log("User:", user);
   if(user){
     authContainer.style.display="none";
     mainNav.style.display="flex";
     document.getElementById("section-strategies").style.display="block";
     document.getElementById("section-calendar").style.display="none";
     signOutBtn.style.display="block";
-  }else{
+  } else {
     authContainer.style.display="block";
     mainNav.style.display="none";
     signOutBtn.style.display="none";
@@ -169,7 +170,7 @@ document.querySelectorAll(".strategy").forEach(strat=>{
 
 // --- Calendar ---
 const calendarEl = document.getElementById("calendar");
-let entries = {}; // { '2025-09-25': [{asset,type,price,result,desc}, ...] }
+let entries = {};
 
 function renderCalendar(month=new Date().getMonth(), year=new Date().getFullYear()){
   calendarEl.innerHTML="";
@@ -208,11 +209,9 @@ document.querySelector(".addEntry").addEventListener("click", ()=>{
   if(!entries[date]) entries[date]=[];
   entries[date].push({asset,type,price,result,desc});
   renderCalendar();
-  // Save to Firestore
   db.collection("users").doc(user.uid).collection("journal").add({
     date, asset, type, price, result, desc, userId:user.uid
   });
-  // Clear inputs
   document.getElementById("entryAsset").value="";
   document.getElementById("entryPrice").value="";
   document.getElementById("entryResult").value="";
@@ -222,4 +221,3 @@ document.querySelector(".addEntry").addEventListener("click", ()=>{
 
 </body>
 </html>
-
