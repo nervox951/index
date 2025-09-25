@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Trade Board</title>
+<title>Trade Board Pro</title>
 <!-- Firebase SDK -->
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
@@ -22,20 +22,30 @@ section { padding:1rem;}
 .calendar div { background:#fff; min-height:80px; padding:0.5rem; position:relative;}
 .calendar div span { position:absolute; top:5px; right:5px; font-size:0.8rem; font-weight:bold;}
 .entry { margin-top:1.5rem; font-size:0.8rem;}
-input, textarea { width:100%; padding:0.3rem; margin:0.2rem 0; border-radius:4px; border:1px solid #ccc;}
-button.addEntry { background:#1a73e8; color:#fff; padding:0.5rem; border:none; border-radius:5px; cursor:pointer; width:100%;}
+input, textarea, select { width:100%; padding:0.3rem; margin:0.2rem 0; border-radius:4px; border:1px solid #ccc;}
+button.addEntry, button.authButton { background:#1a73e8; color:#fff; padding:0.5rem; border:none; border-radius:5px; cursor:pointer; width:100%; margin-top:0.5rem;}
+#authContainer { max-width:400px; margin:1rem auto; background:#fff; padding:1rem; border-radius:8px; box-shadow:0 2px 5px rgba(0,0,0,0.1);}
 </style>
 </head>
 <body>
 
-<header>Trade Board</header>
+<header>Trade Board Pro</header>
 
-<nav>
+<div id="authContainer">
+  <h2>Connexion / Inscription</h2>
+  <input type="email" id="authEmail" placeholder="Adresse e-mail">
+  <input type="password" id="authPassword" placeholder="Mot de passe">
+  <button class="authButton" id="signUpBtn">Créer un compte</button>
+  <button class="authButton" id="signInBtn">Se connecter</button>
+  <button class="authButton" id="signOutBtn" style="display:none;">Se déconnecter</button>
+</div>
+
+<nav style="display:none;" id="mainNav">
   <button id="tab-strategies" class="active">Stratégies</button>
   <button id="tab-calendar">Calendrier / Journal</button>
 </nav>
 
-<section id="section-strategies">
+<section id="section-strategies" style="display:none;">
   <h2>Mes stratégies</h2>
   <div class="strategy">
     <strong>Exemple stratégie</strong>
@@ -77,6 +87,48 @@ const firebaseConfig = {
 firebase.initializeApp(firebaseConfig);
 const auth = firebase.auth();
 const db = firebase.firestore();
+
+// --- Auth ---
+const signUpBtn = document.getElementById("signUpBtn");
+const signInBtn = document.getElementById("signInBtn");
+const signOutBtn = document.getElementById("signOutBtn");
+const authContainer = document.getElementById("authContainer");
+const mainNav = document.getElementById("mainNav");
+
+signUpBtn.addEventListener("click", ()=>{
+  const email = document.getElementById("authEmail").value;
+  const password = document.getElementById("authPassword").value;
+  auth.createUserWithEmailAndPassword(email, password)
+  .then(()=>alert("Compte créé !"))
+  .catch(err=>alert(err.message));
+});
+
+signInBtn.addEventListener("click", ()=>{
+  const email = document.getElementById("authEmail").value;
+  const password = document.getElementById("authPassword").value;
+  auth.signInWithEmailAndPassword(email, password)
+  .catch(err=>alert(err.message));
+});
+
+signOutBtn.addEventListener("click", ()=>{
+  auth.signOut();
+});
+
+auth.onAuthStateChanged(user=>{
+  if(user){
+    authContainer.style.display="none";
+    mainNav.style.display="flex";
+    document.getElementById("section-strategies").style.display="block";
+    document.getElementById("section-calendar").style.display="none";
+    signOutBtn.style.display="block";
+  }else{
+    authContainer.style.display="block";
+    mainNav.style.display="none";
+    signOutBtn.style.display="none";
+    document.getElementById("section-strategies").style.display="none";
+    document.getElementById("section-calendar").style.display="none";
+  }
+});
 
 // --- Tab navigation ---
 const tabStrategies = document.getElementById("tab-strategies");
@@ -150,13 +202,14 @@ document.querySelector(".addEntry").addEventListener("click", ()=>{
   const price = parseFloat(document.getElementById("entryPrice").value);
   const result = parseFloat(document.getElementById("entryResult").value);
   const desc = document.getElementById("entryDescription").value;
+  const user = auth.currentUser;
+  if(!user) return alert("Connecte-toi d'abord");
   if(!entries[date]) entries[date]=[];
   entries[date].push({asset,type,price,result,desc});
   renderCalendar();
-  // --- Save to Firestore ---
-  const userId = "testUser"; // à remplacer par auth.currentUser.uid quand Auth est en place
-  db.collection("users").doc(userId).collection("journal").add({
-    date, asset, type, price, result, desc, userId
+  // Save to Firestore
+  db.collection("users").doc(user.uid).collection("journal").add({
+    date, asset, type, price, result, desc, userId:user.uid
   });
   // Clear inputs
   document.getElementById("entryAsset").value="";
