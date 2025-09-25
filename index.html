@@ -49,11 +49,11 @@ button.addEntry:hover,button.authButton:hover{background:#155ab6;}
 /* Auth container */
 #authContainer{max-width:400px;margin:1rem auto;background:#fff;padding:1rem;border-radius:10px;box-shadow:0 4px 12px rgba(0,0,0,0.15);}
 #signOutBtn{margin-top:0.5rem;}
+#totalProfit{font-weight:bold;margin-bottom:1rem;font-size:1.2rem;}
 </style>
 </head>
 <body>
 
-<!-- Intro écran -->
 <div id="introScreen">
   <h1>Trade Board Pro</h1>
   <p>Bienvenue sur votre application de suivi de stratégies et journal de trading.<br>Planifiez, suivez vos positions et analysez vos performances facilement.<br>"Le succès en trading vient de la discipline et de l'organisation."</p>
@@ -61,25 +61,21 @@ button.addEntry:hover,button.authButton:hover{background:#155ab6;}
 
 <header id="mainHeader">Trade Board Pro</header>
 
-<!-- Authentification -->
 <div id="authContainer">
-  <h2>Connexion</h2>
+  <h2>Connexion / Inscription</h2>
   <input type="email" id="authEmail" placeholder="Adresse e-mail">
   <input type="password" id="authPassword" placeholder="Mot de passe">
   <button class="authButton" id="signInBtn">Se connecter</button>
   <button class="authButton" id="signUpBtn">Créer un compte</button>
-  <button class="authButton" id="googleSignInBtn">Se connecter avec Google</button>
   <button class="authButton" id="signOutBtn" style="display:none;">Se déconnecter</button>
-  <div id="emailWarning" style="color:red;font-size:0.85rem;display:none;margin-top:0.5rem;">Email non vérifié !</div>
+  <div id="emailWarning" style="color:red;font-size:0.85rem;display:none;margin-top:0.5rem;"></div>
 </div>
 
-<!-- Navigation -->
 <nav style="display:none;" id="mainNav">
   <button id="tab-strategies" class="active">Stratégies</button>
   <button id="tab-calendar">Calendrier</button>
 </nav>
 
-<!-- Section Stratégies -->
 <section id="section-strategies" style="display:none;">
   <h2>Mes stratégies</h2>
   <div class="strategy" draggable="true">
@@ -94,9 +90,9 @@ button.addEntry:hover,button.authButton:hover{background:#155ab6;}
   </div>
 </section>
 
-<!-- Section Calendrier -->
 <section id="section-calendar" style="display:none;">
   <h2>Calendrier & Journal</h2>
+  <div id="totalProfit">Profit total: 0</div>
   <div style="display:flex;justify-content:space-between;margin-bottom:0.5rem;">
     <button id="prevMonth">&lt; Mois précédent</button>
     <span id="currentMonth" style="font-weight:bold;"></span>
@@ -140,12 +136,9 @@ const db = firebase.firestore();
 
 // --- Intro dynamique ---
 const introScreen = document.getElementById("introScreen");
-function hideIntro() {
-  introScreen.classList.add("hide");
-  setTimeout(()=>{introScreen.style.display="none";},1000);
-}
-introScreen.addEventListener("click", hideIntro);
+function hideIntro(){ introScreen.classList.add("hide"); setTimeout(()=>introScreen.style.display="none",1000);}
 setTimeout(hideIntro,3000);
+introScreen.addEventListener("click",hideIntro);
 
 // --- Sections et onglets ---
 const mainNav = document.getElementById("mainNav");
@@ -166,6 +159,7 @@ document.getElementById("tab-calendar").addEventListener("click",()=>{
 const authContainer = document.getElementById("authContainer");
 const signOutBtn = document.getElementById("signOutBtn");
 const emailWarning = document.getElementById("emailWarning");
+const totalProfitEl = document.getElementById("totalProfit");
 
 auth.onAuthStateChanged(user=>{
   if(user){
@@ -182,30 +176,29 @@ auth.onAuthStateChanged(user=>{
   }
 });
 
-document.getElementById("signInBtn").addEventListener("click",()=>{
+document.getElementById("signInBtn").addEventListener("click",async ()=>{
   const email=document.getElementById("authEmail").value;
   const password=document.getElementById("authPassword").value;
-  auth.signInWithEmailAndPassword(email,password).catch(err=>alert(err.message));
+  try{
+    await auth.signInWithEmailAndPassword(email,password);
+  }catch(err){
+    if(err.code==="auth/user-not-found") alert("Compte inexistant ! Créez un compte.");
+    else if(err.code==="auth/wrong-password") alert("Mot de passe incorrect !");
+    else alert(err.message);
+  }
 });
 
-document.getElementById("signUpBtn").addEventListener("click",async()=>{
-  const email=prompt("Email:");
-  const password=prompt("Mot de passe:");
+document.getElementById("signUpBtn").addEventListener("click",async ()=>{
+  const email=document.getElementById("authEmail").value;
+  const password=document.getElementById("authPassword").value;
+  if(!email || !password){ alert("Veuillez remplir email et mot de passe."); return;}
   try{
     const userCredential=await auth.createUserWithEmailAndPassword(email,password);
-    const user=userCredential.user;
-    await user.sendEmailVerification();
-    alert("Compte créé ! Vérifiez votre email.");
-  }catch(err){alert(err.message);}
-});
-
-// --- Connexion Google ---
-document.getElementById("googleSignInBtn").addEventListener("click", async()=>{
-  const provider = new firebase.auth.GoogleAuthProvider();
-  try{
-    await auth.signInWithPopup(provider);
+    await userCredential.user.sendEmailVerification();
+    alert("Compte créé ! Vérifiez votre email pour vous connecter.");
   }catch(err){
-    alert("Erreur connexion Google : " + err.message);
+    if(err.code==="auth/email-already-in-use") alert("Cette adresse email existe déjà !");
+    else alert(err.message);
   }
 });
 
@@ -236,6 +229,7 @@ const entryTypeInput = document.getElementById("entryType");
 const entryPriceInput = document.getElementById("entryPrice");
 const entryResultInput = document.getElementById("entryResult");
 const entryDescriptionInput = document.getElementById("entryDescription");
+
 let entries = {};
 let today = new Date();
 let currentMonth = today.getMonth();
@@ -243,31 +237,36 @@ let currentYear = today.getFullYear();
 
 function renderCalendar(month=currentMonth,year=currentYear){
   calendarEl.innerHTML="";
+  let totalGlobal=0;
+
   const firstDay = new Date(year,month,1).getDay();
   const lastDate = new Date(year,month+1,0).getDate();
   const daysInWeek=["Dim","Lun","Mar","Mer","Jeu","Ven","Sam"];
   daysInWeek.forEach(d=>{const div=document.createElement("div"); div.style.fontWeight="bold"; div.style.background="#e3e3e3"; div.textContent=d; calendarEl.appendChild(div);});
   for(let i=0;i<firstDay;i++) calendarEl.appendChild(document.createElement("div"));
+
   for(let d=1;d<=lastDate;d++){
     const div=document.createElement("div");
     const dateStr=`${year}-${String(month+1).padStart(2,"0")}-${String(d).padStart(2,"0")}`;
     div.textContent=d;
+    let dayTotal=0;
     if(entries[dateStr]){
-      let total=0;
       entries[dateStr].forEach(en=>{
         const eDiv=document.createElement("div");
         eDiv.className="entry";
         const icon = en.type==="achat"?"fa-arrow-up":"fa-arrow-down";
         eDiv.innerHTML=`<i class="fas ${icon}"></i>${en.asset} ${en.result>0?'<span class="gain">+'+en.result+'</span>':'<span class="loss">'+en.result+'</span>'}`;
-        total+=en.result;
         div.appendChild(eDiv);
+        dayTotal+=en.result;
       });
-      div.style.background = total>=0?"#d4edda":"#f8d7da";
+      div.style.background = dayTotal>=0?"#d4edda":"#f8d7da";
     }
+    totalGlobal+=dayTotal;
     div.addEventListener("click",()=>{entryDateInput.value=dateStr; sectionCalendar.scrollIntoView({behavior:"smooth"});});
     calendarEl.appendChild(div);
   }
   currentMonthLabel.textContent=new Date(year,month).toLocaleString('fr-FR',{month:'long',year:'numeric'});
+  totalProfitEl.textContent = `Profit total: ${totalGlobal}`;
 }
 
 prevMonthBtn.addEventListener("click",()=>{currentMonth--; if(currentMonth<0){currentMonth=11; currentYear--;} renderCalendar();});
@@ -302,6 +301,5 @@ async function loadUserData(uid){
 
 renderCalendar();
 </script>
-
 </body>
 </html>
