@@ -9,66 +9,48 @@
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
 <script src="https://kit.fontawesome.com/a076d05399.js" crossorigin="anonymous"></script>
 <style>
-body, html { margin:0; padding:0; font-family:'Segoe UI',sans-serif; background:#1e1e1e; color:#fff; overflow-x:hidden;}
-/* Écran accueil dynamique */
+body, html {margin:0;padding:0;font-family:'Segoe UI',sans-serif;background:#111;color:#0f0;overflow-x:hidden;}
 #introScreen{position:fixed;top:0;left:0;width:100%;height:100%;background:#111;color:#0f0;display:flex;justify-content:center;align-items:center;flex-direction:column;transition:transform 0.8s ease-out;z-index:100;cursor:pointer;}
 #introScreen.hide{transform:translateX(-100%);}
 #introScreen h1{font-size:3rem;margin:0;}
 #introScreen p{font-size:1.2rem;margin-top:1rem;text-align:center;max-width:600px;line-height:1.4;}
-
-/* Header et navigation */
 header{background:#0f0;color:#111;padding:1rem;text-align:center;font-size:1.8rem;font-weight:bold;position:sticky;top:0;z-index:50;}
 nav{display:flex;justify-content:space-around;background:#222;padding:0.5rem 0;position:sticky;top:60px;z-index:40;}
 nav button{padding:0.6rem 1.2rem;border:none;border-radius:6px;font-weight:bold;cursor:pointer;transition:0.3s;background:#444;color:#fff;}
 nav button.active{background:#0f0;color:#111;}
-
-/* Sections */
 section{padding:1rem;}
-.strategy, .calendar-container{background:#333;margin-bottom:1rem;padding:1rem;border-radius:10px;box-shadow:0 4px 12px rgba(0,0,0,0.5);}
+.strategy, .calendar-container{background:#222;margin-bottom:1rem;padding:1rem;border-radius:10px;box-shadow:0 4px 12px rgba(0,0,0,0.5);}
 .progress-bar{height:20px;background:#555;border-radius:10px;overflow:hidden;margin-top:0.5rem;}
 .progress-bar-inner{height:100%;background:#0f0;width:0%;text-align:center;color:#111;line-height:20px;font-size:0.85rem;}
-
-/* Calendrier */
 .calendar{display:grid;grid-template-columns:repeat(7,1fr);gap:1px;background:#222;border-radius:8px;overflow:hidden;}
 .calendar div{background:#333;min-height:80px;padding:0.4rem;position:relative;font-size:0.9rem;cursor:pointer;transition:0.3s;}
 .calendar div:hover{background:#444;}
-.calendar div span{position:absolute;top:3px;right:5px;font-size:0.75rem;font-weight:bold;}
 .entry{margin-top:1.2rem;font-size:0.75rem;display:flex;align-items:center;transition:0.2s;}
 .entry i{margin-right:5px;}
 .entry .gain{color:#0f0;font-weight:bold;}
 .entry .loss{color:red;font-weight:bold;}
-
-/* Inputs */
-input,textarea,select{width:100%;padding:0.4rem;margin:0.2rem 0;border-radius:5px;border:1px solid #555;background:#222;color:#fff;}
+input,textarea,select{width:100%;padding:0.4rem;margin:0.2rem 0;border-radius:5px;border:1px solid #555;background:#222;color:#0f0;}
 button.addEntry,button.authButton{background:#0f0;color:#111;padding:0.5rem;border:none;border-radius:6px;cursor:pointer;width:100%;margin-top:0.5rem;transition:0.2s;}
 button.addEntry:hover,button.authButton:hover{background:#0b0;}
-
-/* Auth container */
 #authContainer{max-width:400px;margin:1rem auto;background:#222;padding:1rem;border-radius:10px;box-shadow:0 4px 12px rgba(0,0,0,0.5);}
 #signOutBtn{margin-top:0.5rem;}
-
-/* Actualités */
 #newsContainer{background:#222;padding:1rem;margin-bottom:1rem;border-radius:10px;overflow:hidden;}
 .newsItem{margin-bottom:0.5rem;}
 .newsItem a{color:#0f0;text-decoration:none;}
 .newsItem a:hover{text-decoration:underline;}
-
-/* Images par jour */
 #imageContainer{background:#222;padding:1rem;margin-bottom:1rem;border-radius:10px;}
 #imageContainer img{max-width:100px;margin:5px;border-radius:6px;}
 </style>
 </head>
 <body>
 
-<!-- Écran accueil -->
 <div id="introScreen">
   <h1>Trade Board Pro</h1>
-  <p>Bienvenue sur votre application de suivi de stratégies et journal de trading.<br>Planifiez, suivez vos positions et analysez vos performances facilement.<br>"Le succès en trading vient de la discipline et de l'organisation."</p>
+  <p>Bienvenue sur votre application de suivi de stratégies et journal de trading.<br>Planifiez, suivez vos positions et analysez vos performances.<br>"Le succès en trading vient de la discipline et de l'organisation."</p>
 </div>
 
 <header id="mainHeader">Trade Board Pro</header>
 
-<!-- Auth -->
 <div id="authContainer">
   <h2>Connexion</h2>
   <input type="email" id="authEmail" placeholder="Adresse e-mail">
@@ -79,7 +61,6 @@ button.addEntry:hover,button.authButton:hover{background:#0b0;}
   <div id="emailWarning" style="color:red;font-size:0.85rem;display:none;margin-top:0.5rem;">Email non vérifié !</div>
 </div>
 
-<!-- Menu -->
 <nav style="display:none;" id="mainNav">
   <button id="tab-news" class="active">Actualités</button>
   <button id="tab-strategies">Stratégies</button>
@@ -87,11 +68,9 @@ button.addEntry:hover,button.authButton:hover{background:#0b0;}
   <button id="tab-images">Images</button>
 </nav>
 
-<!-- Sections -->
 <section id="section-news" style="display:none;">
   <h2>Actualités financières</h2>
   <div id="newsContainer"></div>
-  <!-- Widget Calendrier économique -->
   <iframe src="https://www.investing.com/economic-calendar/" style="width:100%;height:500px;border:none;border-radius:10px;margin-top:1rem;"></iframe>
 </section>
 
@@ -152,11 +131,11 @@ const db = firebase.firestore();
 
 // --- Intro dynamique ---
 const introScreen = document.getElementById("introScreen");
-function hideIntro() { introScreen.classList.add("hide"); setTimeout(()=>{introScreen.style.display="none";},800);}
-setTimeout(hideIntro,3000);
+function hideIntro(){introScreen.classList.add("hide"); setTimeout(()=>{introScreen.style.display="none";},800);}
 introScreen.addEventListener("click",hideIntro);
+setTimeout(hideIntro,3000);
 
-// --- Sections et onglets ---
+// --- Menu onglets ---
 const mainNav = document.getElementById("mainNav");
 const sections = {
   news: document.getElementById("section-news"),
@@ -164,30 +143,34 @@ const sections = {
   calendar: document.getElementById("section-calendar"),
   images: document.getElementById("section-images")
 };
-document.getElementById("tab-news").addEventListener("click",()=>{showSection("news");});
-document.getElementById("tab-strategies").addEventListener("click",()=>{showSection("strategies");});
-document.getElementById("tab-calendar").addEventListener("click",()=>{showSection("calendar");});
-document.getElementById("tab-images").addEventListener("click",()=>{showSection("images");});
+document.getElementById("tab-news").addEventListener("click",()=>showSection("news"));
+document.getElementById("tab-strategies").addEventListener("click",()=>showSection("strategies"));
+document.getElementById("tab-calendar").addEventListener("click",()=>showSection("calendar"));
+document.getElementById("tab-images").addEventListener("click",()=>showSection("images"));
 function showSection(sec){
-  for(let s in sections){sections[s].style.display="none";}
+  Object.values(sections).forEach(s=>s.style.display="none");
   sections[sec].style.display="block";
   document.querySelectorAll("nav button").forEach(b=>b.classList.remove("active"));
   document.getElementById("tab-"+sec).classList.add("active");
 }
 
-// --- Auth ---
+// --- Auth email/password ---
 const authContainer = document.getElementById("authContainer");
 const signOutBtn = document.getElementById("signOutBtn");
+const emailWarning = document.getElementById("emailWarning");
 auth.onAuthStateChanged(user=>{
   if(user){
-    if(!user.emailVerified){alert("Vérifiez votre email !"); auth.signOut(); return;}
+    if(!user.emailVerified){emailWarning.style.display="block"; auth.signOut(); return;}
+    emailWarning.style.display="none";
     authContainer.style.display="none";
     mainNav.style.display="flex";
     showSection("news");
-    loadUserData(user.uid);
+    signOutBtn.style.display="block";
   } else {
     authContainer.style.display="block";
     mainNav.style.display="none";
+    signOutBtn.style.display="none";
+    Object.values(sections).forEach(s=>s.style.display="none");
   }
 });
 document.getElementById("signInBtn").addEventListener("click",()=>{
@@ -199,95 +182,32 @@ document.getElementById("signUpBtn").addEventListener("click",async()=>{
   const email=prompt("Email:");
   const password=prompt("Mot de passe:");
   try{
-    const user=await auth.createUserWithEmailAndPassword(email,password);
-    await user.user.sendEmailVerification();
+    const userCredential=await auth.createUserWithEmailAndPassword(email,password);
+    const user=userCredential.user;
+    await user.sendEmailVerification();
     alert("Compte créé ! Vérifiez votre email.");
   }catch(err){alert(err.message);}
 });
 signOutBtn.addEventListener("click",()=>auth.signOut());
 
-// --- News ---
+// --- News dynamique exemple ---
 const newsContainer = document.getElementById("newsContainer");
-async function loadNews(){
-  // Exemple simple à remplacer par API ou flux RSS
-  const sampleNews = [
-    {title:"Gold progresse après la demande asiatique",link:"#"},
-    {title:"Dollar corrigé suite aux annonces économiques",link:"#"},
-    {title:"Bitcoin en hausse continue",link:"#"}
-  ];
+const exampleNews=[
+  {title:"Gold en hausse",link:"https://www.investing.com/commodities/gold",date:new Date()},
+  {title:"Dollar se stabilise",link:"https://www.investing.com/currencies/usd-index",date:new Date()},
+  {title:"Bitcoin poursuit sa hausse",link:"https://www.investing.com/crypto/bitcoin",date:new Date()}
+];
+function renderNews(){
   newsContainer.innerHTML="";
-  sampleNews.forEach(n=>{
-    const div = document.createElement("div");
+  exampleNews.forEach(n=>{
+    const div=document.createElement("div");
     div.className="newsItem";
-    div.innerHTML=`<a href="${n.link}" target="_blank">${n.title}</a>`;
+    const dateText = (new Date(n.date).toDateString() === new Date().toDateString())?`Aujourd'hui ${new Date(n.date).toLocaleTimeString([], {hour:'2-digit',minute:'2-digit'})}`:n.date.toLocaleDateString();
+    div.innerHTML=`<a href="${n.link}" target="_blank">${n.title}</a> - ${dateText}`;
     newsContainer.appendChild(div);
   });
 }
-loadNews();
-
-// --- Stratégies ---
-const strategiesContainer = document.getElementById("strategiesContainer");
-document.getElementById("addStrategyBtn").addEventListener("click",()=>{
-  const div = document.createElement("div");
-  div.className="strategy";
-  div.innerHTML=`<input type="text" placeholder="Nom stratégie"><button class="deleteStrategyBtn">Supprimer</button><div class="conditionsContainer"></div><button class="addConditionBtn">Ajouter condition</button>`;
-  strategiesContainer.appendChild(div);
-  div.querySelector(".deleteStrategyBtn").addEventListener("click",()=>div.remove());
-  div.querySelector(".addConditionBtn").addEventListener("click",()=>{
-    const cond = document.createElement("input");
-    cond.placeholder="Nouvelle condition";
-    div.querySelector(".conditionsContainer").appendChild(cond);
-  });
-});
-
-// --- Calendrier (voir script précédent) ---
-// ... copier le script complet du calendrier ici comme fourni dans la réponse précédente ...
-
-// --- Images ---
-const imageInput = document.getElementById("imageInput");
-const imageContainer = document.getElementById("imageContainer");
-document.getElementById("addImageBtn").addEventListener("click", async()=>{
-  const user = auth.currentUser;
-  if(!user){alert("Connecte-toi"); return;}
-  const files = imageInput.files;
-  for(let f=0;f<files.length;f++){
-    const file = files[f];
-    const reader = new FileReader();
-    reader.onload = async (e)=>{
-      const dataURL = e.target.result;
-      const img = document.createElement("img");
-      img.src=dataURL;
-      imageContainer.appendChild(img);
-      // Sauvegarde Firestore
-      await db.collection("users").doc(user.uid).collection("images").add({dataURL, date:new Date().toISOString()});
-    };
-    reader.readAsDataURL(file);
-  }
-  imageInput.value="";
-});
-
-// --- Charger les données utilisateur ---
-async function loadUserData(uid){
-  // Calendrier
-  entries={};
-  const snapshot = await db.collection("users").doc(uid).collection("journal").get();
-  snapshot.forEach(doc=>{
-    const data = doc.data();
-    if(!entries[data.date]) entries[data.date]=[];
-    entries[data.date].push({asset:data.asset,type:data.type,price:data.price,result:data.result,desc:data.desc});
-  });
-  renderCalendar();
-
-  // Images
-  const imagesSnap = await db.collection("users").doc(uid).collection("images").get();
-  imageContainer.innerHTML="";
-  imagesSnap.forEach(doc=>{
-    const data = doc.data();
-    const img = document.createElement("img");
-    img.src=data.dataURL;
-    imageContainer.appendChild(img);
-  });
-}
+renderNews();
 </script>
 </body>
 </html>
