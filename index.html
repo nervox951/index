@@ -17,37 +17,34 @@
 <script src="https://kit.fontawesome.com/a076d05399.js" crossorigin="anonymous"></script>
 
 <style>
-/* --- Reset & body --- */
 body, html{margin:0;padding:0;font-family:'Segoe UI',sans-serif;background:#121212;color:#e0e0e0;overflow-x:hidden;}
-a{text-decoration:none;color:#1a73e8;}
-header{background:#1a73e8;color:#fff;padding:1rem;text-align:center;font-size:1.8rem;font-weight:bold;position:sticky;top:0;z-index:50;}
+a{text-decoration:none;color:#39ff14;}
 
-/* --- Intro Screen --- */
-#introScreen{position:fixed;top:0;left:0;width:100%;height:100%;background:#121212;color:#fff;display:flex;justify-content:center;align-items:center;flex-direction:column;transition:transform 1s ease-out;z-index:100;}
+/* Intro Screen */
+#introScreen{position:fixed;top:0;left:0;width:100%;height:100%;background:#121212;color:#39ff14;display:flex;justify-content:center;align-items:center;flex-direction:column;transition:transform 1s ease-out;z-index:100;}
 #introScreen.hide{transform:translateX(-100%);}
 #introScreen h1{font-size:3rem;margin:0;}
 #introScreen p{font-size:1.2rem;margin-top:1rem;text-align:center;max-width:600px;line-height:1.4;}
 
-/* --- Navigation --- */
+/* Header & Nav */
+header{background:#39ff14;color:#121212;padding:1rem;text-align:center;font-size:1.8rem;font-weight:bold;position:sticky;top:0;z-index:50;}
 nav{display:flex;justify-content:space-around;background:#1f1f1f;padding:0.5rem 0;position:sticky;top:0;z-index:40;}
-nav button{padding:0.6rem 1.2rem;border:none;border-radius:6px;font-weight:bold;cursor:pointer;transition:0.3s;background:#333;color:#e0e0e0;}
-nav button.active{background:#1a73e8;color:#fff;}
+nav button{padding:0.6rem 1.2rem;border:none;border-radius:6px;font-weight:bold;cursor:pointer;transition:0.3s;background:#333;color:#39ff14;}
+nav button.active{background:#39ff14;color:#121212;}
 
-/* --- Sections --- */
+/* Sections & cards */
 section{padding:1rem;}
 .card{background:#1e1e1e;margin-bottom:1rem;padding:1rem;border-radius:10px;box-shadow:0 4px 12px rgba(0,0,0,0.3);}
-
-/* --- Market Widget --- */
 .market{display:flex;justify-content:space-between;margin-bottom:0.5rem;padding:0.5rem 0;border-bottom:1px solid #333;}
 .market span{font-weight:bold;}
 
-/* --- Auth Container --- */
+/* Auth Container */
 #authContainer{max-width:400px;margin:1rem auto;background:#1e1e1e;padding:1rem;border-radius:10px;box-shadow:0 4px 12px rgba(0,0,0,0.3);}
-input,textarea,select{width:100%;padding:0.4rem;margin:0.2rem 0;border-radius:5px;border:1px solid #555;background:#121212;color:#fff;}
-button.authButton{background:#1a73e8;color:#fff;padding:0.5rem;border:none;border-radius:6px;cursor:pointer;width:100%;margin-top:0.5rem;transition:0.2s;}
-button.authButton:hover{background:#155ab6;}
+input,textarea,select{width:100%;padding:0.4rem;margin:0.2rem 0;border-radius:5px;border:1px solid #555;background:#121212;color:#39ff14;}
+button.authButton{background:#39ff14;color:#121212;padding:0.5rem;border:none;border-radius:6px;cursor:pointer;width:100%;margin-top:0.5rem;transition:0.2s;}
+button.authButton:hover{background:#28c000;}
 
-/* --- Calendrier --- */
+/* Calendrier */
 .calendar{display:grid;grid-template-columns:repeat(7,1fr);gap:1px;background:#333;border-radius:8px;overflow:hidden;}
 .calendar div{background:#1e1e1e;min-height:80px;padding:0.4rem;position:relative;font-size:0.9rem;cursor:pointer;transition:0.3s;}
 .calendar div:hover{background:#2a2a2a;}
@@ -58,13 +55,19 @@ button.authButton:hover{background:#155ab6;}
 .entry .loss{color:red;font-weight:bold;}
 .entry .edit{cursor:pointer;text-decoration:underline;}
 
-/* --- Floating Home Button --- */
-#homeBtn{position:fixed;bottom:20px;right:20px;width:50px;height:50px;background:#1a73e8;color:#fff;border-radius:50%;display:flex;justify-content:center;align-items:center;font-size:1.5rem;cursor:pointer;z-index:60;box-shadow:0 4px 12px rgba(0,0,0,0.5);}
+/* Floating Home Button */
+#homeBtn{position:fixed;bottom:20px;right:20px;width:50px;height:50px;background:#39ff14;color:#121212;border-radius:50%;display:flex;justify-content:center;align-items:center;font-size:1.5rem;cursor:pointer;z-index:60;box-shadow:0 4px 12px rgba(0,0,0,0.5);}
+
+/* Market news carousel */
+#newsCarousel{display:flex;overflow:hidden;width:100%;height:120px;margin-bottom:1rem;}
+.newsItem{flex:0 0 100%;transition:transform 0.5s;}
+
+/* Chart container */
+#chartContainer{height:200px;margin-top:1rem;}
 </style>
 </head>
 <body>
 
-<!-- Intro -->
 <div id="introScreen">
   <h1>Trade Board Pro</h1>
   <p>Bienvenue sur votre application de suivi de stratégies et journal de trading.<br>
@@ -94,16 +97,14 @@ button.authButton:hover{background:#155ab6;}
 
 <!-- Sections -->
 <section id="section-home" style="display:none;">
-  <h2>Résumé Marchés</h2>
+  <h2>Résumé Marchés & Actualité</h2>
   <div id="marketContainer" class="card"></div>
-  <h2>Calendrier économique</h2>
-  <a href="https://www.investing.com/economic-calendar/" target="_blank" class="card" style="display:block;">Voir le calendrier économique complet</a>
+  <div id="newsCarousel" class="card"></div>
   <h2>Citations Trading</h2>
   <div class="card">
     <p>"Tradez avec votre cerveau, pas avec vos émotions." - Alexander Elder</p>
     <p>"Le marché peut rester irrationnel plus longtemps que vous ne pouvez rester solvable." - John Maynard Keynes</p>
   </div>
-  <canvas id="profitChart" height="100"></canvas>
 </section>
 
 <section id="section-strategies" style="display:none;">
@@ -120,6 +121,7 @@ button.authButton:hover{background:#155ab6;}
     <button id="nextMonth">Mois suivant &gt;</button>
   </div>
   <div class="calendar" id="calendar"></div>
+  <div id="chartContainer"><canvas id="profitChart"></canvas></div>
 </section>
 
 <div id="homeBtn"><i class="fas fa-home"></i></div>
@@ -138,31 +140,13 @@ firebase.initializeApp(firebaseConfig);
 const auth = firebase.auth();
 const db = firebase.firestore();
 
-// --- Twelve Data ---
-const TWELVE_DATA_API_KEY = "32d3cd3d96e14670ae9f631cba860d27";
-const marketSymbols = ["XAU/USD","US Dollar Index","EUR/USD","GBP/USD","BTC/USD"];
-const marketContainer = document.getElementById("marketContainer");
-async function fetchMarkets(){
-  marketContainer.innerHTML="";
-  for(const symbol of marketSymbols){
-    try{
-      const res = await fetch(`https://api.twelvedata.com/price?symbol=${encodeURIComponent(symbol)}&apikey=${TWELVE_DATA_API_KEY}`);
-      const data = await res.json();
-      const price = data.price ? parseFloat(data.price).toFixed(2) : "N/A";
-      const div = document.createElement("div");
-      div.className = "market";
-      div.innerHTML = `<span>${symbol}</span><span>${price}</span>`;
-      marketContainer.appendChild(div);
-    }catch(e){console.log(e);}
-  }
-}
-
-// --- Intro Screen ---
+// --- Intro ---
 const introScreen = document.getElementById("introScreen");
-introScreen.addEventListener("click",()=>{introScreen.classList.add("hide");setTimeout(()=>{introScreen.style.display="none";},1000);});
-setTimeout(()=>{introScreen.classList.add("hide");setTimeout(()=>{introScreen.style.display="none";},1000);},3000);
+introScreen.addEventListener("click",()=>{hideIntro();});
+setTimeout(hideIntro,3000);
+function hideIntro(){introScreen.classList.add("hide"); setTimeout(()=>{introScreen.style.display="none";},1000);}
 
-// --- Navigation ---
+// --- Sections Navigation ---
 const mainNav = document.getElementById("mainNav");
 const sectionHome = document.getElementById("section-home");
 const sectionStrategies = document.getElementById("section-strategies");
@@ -200,7 +184,7 @@ auth.onAuthStateChanged(user=>{
     mainNav.style.display="flex";
     showSection("home");
     fetchMarkets();
-    loadUserData(user.uid);
+    fetchEcoNews();
   } else {
     authContainer.style.display="block";
     mainNav.style.display="none";
@@ -229,11 +213,123 @@ document.getElementById("signUpBtn").addEventListener("click",async()=>{
 
 signOutBtn.addEventListener("click",()=>auth.signOut());
 
-// --- TODO ---
-// Ajouter stratégies dynamiques, calendrier avec ajout/modif/suppression trade,
-// dépôt journalier, graphique gains/pertes, Google Sign-In après ajout domaine autorisé.
-// Gestion responsive et mise en page premium.
+// --- Strategies ---
+const strategyContainer = document.getElementById("strategyContainer");
+const addStrategyBtn = document.getElementById("addStrategyBtn");
+let strategies = [];
 
+function renderStrategies(){
+  strategyContainer.innerHTML="";
+  strategies.forEach((str,i)=>{
+    const div = document.createElement("div");
+    div.className="card";
+    div.innerHTML=`<strong>${str.name}</strong><br><textarea class="conditionInput" placeholder="Conditions">${str.conditions.join("\n")}</textarea>
+    <button class="saveStrategy authButton">Sauvegarder</button>
+    <button class="deleteStrategy authButton">Supprimer</button>`;
+    strategyContainer.appendChild(div);
+
+    div.querySelector(".saveStrategy").addEventListener("click",()=>{
+      const newConds = div.querySelector(".conditionInput").value.split("\n");
+      strategies[i].conditions = newConds;
+    });
+    div.querySelector(".deleteStrategy").addEventListener("click",()=>{strategies.splice(i,1); renderStrategies();});
+  });
+}
+
+addStrategyBtn.addEventListener("click",()=>{
+  const name = prompt("Nom de la stratégie:");
+  if(!name) return;
+  strategies.push({name,conditions:[]});
+  renderStrategies();
+});
+
+// --- Calendrier (simplifié) ---
+const calendarEl = document.getElementById("calendar");
+let entries = {};
+let today = new Date();
+let currentMonth = today.getMonth();
+let currentYear = today.getFullYear();
+
+function renderCalendar(){
+  calendarEl.innerHTML="";
+  const firstDay = new Date(currentYear,currentMonth,1).getDay();
+  const lastDate = new Date(currentYear,currentMonth+1,0).getDate();
+  for(let i=0;i<firstDay;i++) calendarEl.appendChild(document.createElement("div"));
+  for(let d=1;d<=lastDate;d++){
+    const div = document.createElement("div");
+    const dateStr = `${currentYear}-${String(currentMonth+1).padStart(2,"0")}-${String(d).padStart(2,"0")}`;
+    div.textContent=d;
+    if(entries[dateStr]){
+      let total = 0;
+      entries[dateStr].forEach(en=>{
+        const eDiv = document.createElement("div");
+        eDiv.className="entry edit";
+        eDiv.innerHTML=`${en.asset}: ${en.result>=0?'<span class="gain">+'+en.result+'</span>':'<span class="loss">'+en.result+'</span>'}`;
+        total += en.result;
+
+        eDiv.addEventListener("dblclick",()=>{
+          const newResult = prompt("Modifier résultat:",en.result);
+          if(newResult!==null) en.result=parseFloat(newResult); renderCalendar();
+        });
+        div.appendChild(eDiv);
+      });
+      div.style.background=total>=0?"#004d00":"#660000";
+    }
+    calendarEl.appendChild(div);
+  }
+}
+
+renderCalendar();
+
+// --- Market + News ---
+const TWELVE_DATA_API_KEY = "32d3cd3d96e14670ae9f631cba860d27";
+const marketContainer = document.getElementById("marketContainer");
+const newsCarousel = document.getElementById("newsCarousel");
+
+async function fetchMarkets(){
+  marketContainer.innerHTML="";
+  const symbols = ["XAU/USD","USD","EUR/USD","BTC/USD"];
+  for(const symbol of symbols){
+    try{
+      const res = await fetch(`https://api.twelvedata.com/price?symbol=${encodeURIComponent(symbol)}&apikey=${TWELVE_DATA_API_KEY}`);
+      const data = await res.json();
+      const price = data.price ? parseFloat(data.price).toFixed(2) : "N/A";
+      const div = document.createElement("div");
+      div.className="market";
+      div.innerHTML=`<span>${symbol}</span><span>${price}</span>`;
+      marketContainer.appendChild(div);
+    }catch(e){console.log(e);}
+  }
+}
+
+async function fetchEcoNews(){
+  newsCarousel.innerHTML="";
+  try{
+    const res = await fetch("https://www.investing.com/feeds/news_25.rss");
+    const text = await res.text();
+    const parser = new DOMParser();
+    const xml = parser.parseFromString(text,"text/xml");
+    const items = xml.querySelectorAll("item");
+    items.forEach((item,i)=>{
+      if(i<5){
+        const title = item.querySelector("title").textContent;
+        const div = document.createElement("div");
+        div.className="newsItem";
+        div.innerHTML=`<strong>${title}</strong>`;
+        newsCarousel.appendChild(div);
+      }
+    });
+  }catch(e){newsCarousel.innerHTML="Impossible de charger l'actualité";console.log(e);}
+}
+
+// --- Chart performance (simple) ---
+const ctx = document.getElementById("profitChart").getContext("2d");
+const profitChart = new Chart(ctx,{
+  type:'line',
+  data:{labels:[],datasets:[{label:"Profit",data:[],borderColor:"#39ff14",backgroundColor:"rgba(57,255,20,0.2)",fill:true}]},
+  options:{responsive:true,plugins:{legend:{labels:{color:"#39ff14"}}},scales:{x:{ticks:{color:"#39ff14"}},y:{ticks:{color:"#39ff14"}}}}
+});
 </script>
+
 </body>
 </html>
