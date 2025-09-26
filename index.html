@@ -4,42 +4,41 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Trade Board Pro</title>
-
-<!-- Firebase -->
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-storage-compat.js"></script>
-
-<!-- FontAwesome -->
 <script src="https://kit.fontawesome.com/a076d05399.js" crossorigin="anonymous"></script>
-
 <style>
-body, html{margin:0;padding:0;font-family:'Segoe UI',sans-serif;background:#121212;color:#fff;}
-#introScreen{position:fixed;top:0;left:0;width:100%;height:100%;background:#0f9d58;display:flex;flex-direction:column;justify-content:center;align-items:center;transition:opacity 1s ease;z-index:100;}
-#introScreen.hide{opacity:0;pointer-events:none;}
+body, html{margin:0;padding:0;font-family:'Segoe UI',sans-serif;background:#121212;color:#fff;overflow-x:hidden;}
+#introScreen{position:fixed;top:0;left:0;width:100%;height:100%;background:#0f9d58;color:#fff;display:flex;justify-content:center;align-items:center;flex-direction:column;transition:transform 1s ease-out;z-index:100;}
+#introScreen.hide{transform:translateX(-100%);}
+#introScreen h1{font-size:3rem;margin:0;}
+#introScreen p{font-size:1.2rem;margin-top:1rem;text-align:center;max-width:600px;line-height:1.4;}
 header{background:#0f9d58;color:#fff;padding:1rem;text-align:center;font-size:1.8rem;font-weight:bold;}
 nav{display:flex;justify-content:space-around;background:#1e1e1e;padding:0.5rem 0;position:sticky;top:0;z-index:10;}
-nav button{padding:0.6rem 1.2rem;border:none;border-radius:6px;font-weight:bold;cursor:pointer;transition:0.3s;}
+nav button{padding:0.6rem 1.2rem;border:none;border-radius:6px;font-weight:bold;cursor:pointer;transition:0.3s;background:#333;color:#fff;}
 nav button.active{background:#0f9d58;color:#fff;}
 section{padding:1rem;}
-.strategy, .calendar-container, .news-container, .photo-container{background:#1e1e1e;margin-bottom:1rem;padding:1rem;border-radius:10px;box-shadow:0 4px 12px rgba(0,0,0,0.3);}
+.strategy, .calendar-container, .news-container, .photos-container{background:#1e1e1e;margin-bottom:1rem;padding:1rem;border-radius:10px;box-shadow:0 4px 12px rgba(0,0,0,0.5);}
 .progress-bar{height:20px;background:#333;border-radius:10px;overflow:hidden;margin-top:0.5rem;}
 .progress-bar-inner{height:100%;background:#0f9d58;width:0%;text-align:center;color:#fff;line-height:20px;font-size:0.85rem;}
 .calendar{display:grid;grid-template-columns:repeat(7,1fr);gap:1px;background:#333;border-radius:8px;overflow:hidden;}
-.calendar div{background:#222;min-height:80px;padding:0.4rem;position:relative;font-size:0.9rem;cursor:pointer;transition:0.3s;}
-.calendar div:hover{background:#2a2a2a;}
+.calendar div{background:#1e1e1e;min-height:80px;padding:0.4rem;position:relative;font-size:0.9rem;cursor:pointer;transition:0.3s;}
+.calendar div:hover{background:#0a6f38;}
 .calendar div span{position:absolute;top:3px;right:5px;font-size:0.75rem;font-weight:bold;}
 .entry{margin-top:1.2rem;font-size:0.75rem;display:flex;align-items:center;transition:0.2s;}
 .entry i{margin-right:5px;}
 .entry .gain{color:#0f9d58;font-weight:bold;}
-.entry .loss{color:#ff4c4c;font-weight:bold;}
-input,textarea,select{width:100%;padding:0.4rem;margin:0.2rem 0;border-radius:5px;border:1px solid #555;background:#2a2a2a;color:#fff;}
-button.addEntry,button.authButton,button.addStrategy{background:#0f9d58;color:#fff;padding:0.5rem;border:none;border-radius:6px;cursor:pointer;width:100%;margin-top:0.5rem;transition:0.2s;}
-button.addEntry:hover,button.authButton:hover,button.addStrategy:hover{background:#0b6b32;}
-#authContainer{max-width:400px;margin:1rem auto;background:#1e1e1e;padding:1rem;border-radius:10px;box-shadow:0 4px 12px rgba(0,0,0,0.3);}
+.entry .loss{color:red;font-weight:bold;}
+input,textarea,select{width:100%;padding:0.4rem;margin:0.2rem 0;border-radius:5px;border:1px solid #555;background:#121212;color:#fff;}
+button.addEntry,button.authButton{background:#0f9d58;color:#fff;padding:0.5rem;border:none;border-radius:6px;cursor:pointer;width:100%;margin-top:0.5rem;transition:0.2s;}
+button.addEntry:hover,button.authButton:hover{background:#075f2d;}
+#authContainer{max-width:400px;margin:1rem auto;background:#1e1e1e;padding:1rem;border-radius:10px;box-shadow:0 4px 12px rgba(0,0,0,0.5);}
 #signOutBtn{margin-top:0.5rem;}
-.homeBtn{position:fixed;bottom:20px;right:20px;background:#0f9d58;color:#fff;border:none;border-radius:50%;width:50px;height:50px;font-size:1.5rem;cursor:pointer;display:flex;align-items:center;justify-content:center;z-index:99;}
+.news-carousel{display:flex;overflow-x:auto;gap:1rem;}
+.news-item{min-width:250px;background:#333;padding:0.5rem;border-radius:8px;}
+.homeBtn{position:fixed;bottom:20px;right:20px;background:#0f9d58;color:#fff;width:50px;height:50px;border-radius:50%;display:flex;justify-content:center;align-items:center;font-size:1.5rem;cursor:pointer;z-index:100;}
 </style>
 </head>
 <body>
@@ -62,21 +61,21 @@ button.addEntry:hover,button.authButton:hover,button.addStrategy:hover{backgroun
 </div>
 
 <nav style="display:none;" id="mainNav">
-  <button id="tab-news" class="active">Actualités</button>
+  <button id="tab-news" class="active">Actualité</button>
   <button id="tab-strategies">Stratégies</button>
   <button id="tab-calendar">Calendrier</button>
   <button id="tab-photos">Photos</button>
 </nav>
 
 <section id="section-news" class="news-container" style="display:none;">
-  <h2>Actualités marché</h2>
-  <div id="newsList"></div>
+  <h2>Actualité Financière</h2>
+  <div class="news-carousel" id="newsCarousel"></div>
 </section>
 
 <section id="section-strategies" style="display:none;">
   <h2>Mes stratégies</h2>
   <div id="strategiesContainer"></div>
-  <button class="addStrategy">Ajouter stratégie</button>
+  <button class="addEntry">Ajouter une stratégie</button>
 </section>
 
 <section id="section-calendar" style="display:none;">
@@ -94,8 +93,7 @@ button.addEntry:hover,button.authButton:hover,button.addStrategy:hover{backgroun
       <option value="GBPUSD">GBP/USD</option>
       <option value="BTCUSD">BTC/USD</option>
       <option value="ETHUSD">ETH/USD</option>
-      <option value="USDJPY">USD/JPY</option>
-      <option value="XAUUSD">XAU/USD (Gold)</option>
+      <option value="XAUUSD">XAU/USD</option>
       <option value="DJ30">DJ30</option>
       <option value="NAS100">NAS100</option>
       <option value="AUTRE">Ajouter un actif...</option>
@@ -104,17 +102,17 @@ button.addEntry:hover,button.authButton:hover,button.addStrategy:hover{backgroun
     <input type="number" id="entryPrice" placeholder="Prix">
     <input type="number" id="entryResult" placeholder="Résultat (gain/perte)">
     <textarea id="entryDescription" placeholder="Description"></textarea>
-    <input type="file" id="entryPhoto" accept="image/*">
+    <input type="file" id="entryPhoto">
     <button class="addEntry">Ajouter l'entrée</button>
   </div>
 </section>
 
-<section id="section-photos" class="photo-container" style="display:none;">
-  <h2>Mes Photos</h2>
-  <div id="photoGallery"></div>
+<section id="section-photos" class="photos-container" style="display:none;">
+  <h2>Photos</h2>
+  <div id="photosGallery"></div>
 </section>
 
-<button class="homeBtn" id="homeBtn"><i class="fas fa-home"></i></button>
+<div class="homeBtn" id="homeBtn"><i class="fas fa-home"></i></div>
 
 <script>
 // --- Firebase config ---
@@ -131,112 +129,74 @@ const auth = firebase.auth();
 const db = firebase.firestore();
 const storage = firebase.storage();
 
-// --- Intro dynamique ---
+// --- Intro ---
 const introScreen = document.getElementById("introScreen");
-introScreen.addEventListener("click", ()=>{introScreen.classList.add("hide");});
-setTimeout(()=>{introScreen.classList.add("hide");},3000);
+introScreen.addEventListener("click",()=>{introScreen.classList.add("hide"); setTimeout(()=>{introScreen.style.display="none";},1000);});
+setTimeout(()=>{introScreen.classList.add("hide"); setTimeout(()=>{introScreen.style.display="none";},1000);},3000);
 
-// --- Sections et onglets ---
+// --- Nav ---
 const mainNav = document.getElementById("mainNav");
-const sectionNews = document.getElementById("section-news");
-const sectionStrategies = document.getElementById("section-strategies");
-const sectionCalendar = document.getElementById("section-calendar");
-const sectionPhotos = document.getElementById("section-photos");
+const sections = {
+  news: document.getElementById("section-news"),
+  strategies: document.getElementById("section-strategies"),
+  calendar: document.getElementById("section-calendar"),
+  photos: document.getElementById("section-photos")
+};
+function showSection(sec){
+  for(let s in sections) sections[s].style.display="none";
+  sections[sec].style.display="block";
+  document.querySelectorAll("nav button").forEach(btn=>btn.classList.remove("active"));
+  document.getElementById("tab-"+sec).classList.add("active");
+}
+document.getElementById("tab-news").addEventListener("click",()=>showSection("news"));
+document.getElementById("tab-strategies").addEventListener("click",()=>showSection("strategies"));
+document.getElementById("tab-calendar").addEventListener("click",()=>showSection("calendar"));
+document.getElementById("tab-photos").addEventListener("click",()=>showSection("photos"));
+document.getElementById("homeBtn").addEventListener("click",()=>showSection("news"));
 
-document.getElementById("tab-news").addEventListener("click",()=>{
-  sectionNews.style.display="block";
-  sectionStrategies.style.display="none";
-  sectionCalendar.style.display="none";
-  sectionPhotos.style.display="none";
-  document.getElementById("tab-news").classList.add("active");
-  document.getElementById("tab-strategies").classList.remove("active");
-  document.getElementById("tab-calendar").classList.remove("active");
-  document.getElementById("tab-photos").classList.remove("active");
-});
-document.getElementById("tab-strategies").addEventListener("click",()=>{
-  sectionNews.style.display="none";
-  sectionStrategies.style.display="block";
-  sectionCalendar.style.display="none";
-  sectionPhotos.style.display="none";
-  document.getElementById("tab-news").classList.remove("active");
-  document.getElementById("tab-strategies").classList.add("active");
-  document.getElementById("tab-calendar").classList.remove("active");
-  document.getElementById("tab-photos").classList.remove("active");
-});
-document.getElementById("tab-calendar").addEventListener("click",()=>{
-  sectionNews.style.display="none";
-  sectionStrategies.style.display="none";
-  sectionCalendar.style.display="block";
-  sectionPhotos.style.display="none";
-  document.getElementById("tab-news").classList.remove("active");
-  document.getElementById("tab-strategies").classList.remove("active");
-  document.getElementById("tab-calendar").classList.add("active");
-  document.getElementById("tab-photos").classList.remove("active");
-});
-document.getElementById("tab-photos").addEventListener("click",()=>{
-  sectionNews.style.display="none";
-  sectionStrategies.style.display="none";
-  sectionCalendar.style.display="none";
-  sectionPhotos.style.display="block";
-  document.getElementById("tab-news").classList.remove("active");
-  document.getElementById("tab-strategies").classList.remove("active");
-  document.getElementById("tab-calendar").classList.remove("active");
-  document.getElementById("tab-photos").classList.add("active");
-});
-
-// --- Authentification ---
+// --- Auth ---
 const authContainer = document.getElementById("authContainer");
 const signOutBtn = document.getElementById("signOutBtn");
-const emailWarning = document.getElementById("emailWarning");
-
 auth.onAuthStateChanged(user=>{
   if(user){
-    if(!user.emailVerified){emailWarning.style.display="block"; auth.signOut(); return;}
-    emailWarning.style.display="none";
+    if(!user.emailVerified){alert("Email non vérifié!"); auth.signOut(); return;}
     authContainer.style.display="none";
     mainNav.style.display="flex";
-    sectionNews.style.display="block";
-    signOutBtn.style.display="block";
+    showSection("news");
     loadUserData(user.uid);
-  }else{
+  } else {
     authContainer.style.display="block";
     mainNav.style.display="none";
-    signOutBtn.style.display="none";
-    sectionNews.style.display="none";
-    sectionStrategies.style.display="none";
-    sectionCalendar.style.display="none";
-    sectionPhotos.style.display="none";
+    for(let s in sections) sections[s].style.display="none";
   }
 });
-
 document.getElementById("signInBtn").addEventListener("click",()=>{
-  const email = document.getElementById("authEmail").value;
-  const password = document.getElementById("authPassword").value;
+  const email=document.getElementById("authEmail").value;
+  const password=document.getElementById("authPassword").value;
   auth.signInWithEmailAndPassword(email,password).catch(err=>alert(err.message));
 });
-
-document.getElementById("signUpBtn").addEventListener("click", async ()=>{
-  const email = prompt("Email:");
-  const password = prompt("Mot de passe:");
+document.getElementById("signUpBtn").addEventListener("click",async()=>{
+  const email=prompt("Email:");
+  const password=prompt("Mot de passe:");
   try{
-    const userCredential = await auth.createUserWithEmailAndPassword(email,password);
-    const user = userCredential.user;
+    const userCredential=await auth.createUserWithEmailAndPassword(email,password);
+    const user=userCredential.user;
     await user.sendEmailVerification();
     alert("Compte créé ! Vérifiez votre email.");
   }catch(err){alert(err.message);}
 });
-
 signOutBtn.addEventListener("click",()=>auth.signOut());
 
-// --- Home button ---
-document.getElementById("homeBtn").addEventListener("click",()=>{
-  sectionNews.style.display="block";
-  sectionStrategies.style.display="none";
-  sectionCalendar.style.display="none";
-  sectionPhotos.style.display="none";
+// --- Stratégies ---
+const strategiesContainer = document.getElementById("strategiesContainer");
+document.querySelector(".addEntry").addEventListener("click",()=>{
+  const stratDiv = document.createElement("div");
+  stratDiv.className="strategy";
+  stratDiv.innerHTML=`<div><input placeholder="Nom stratégie"><br><textarea placeholder="Description stratégie"></textarea></div>`;
+  strategiesContainer.appendChild(stratDiv);
 });
 
-// --- Calendrier & Journal ---
+// --- Calendrier ---
 const calendarEl = document.getElementById("calendar");
 const prevMonthBtn = document.getElementById("prevMonth");
 const nextMonthBtn = document.getElementById("nextMonth");
@@ -248,23 +208,22 @@ const entryPriceInput = document.getElementById("entryPrice");
 const entryResultInput = document.getElementById("entryResult");
 const entryDescriptionInput = document.getElementById("entryDescription");
 const entryPhotoInput = document.getElementById("entryPhoto");
-
 let entries = {};
 let today = new Date();
 let currentMonth = today.getMonth();
 let currentYear = today.getFullYear();
-
-// Fonction pour afficher calendrier
-function renderCalendar(month=currentMonth,year=currentYear){
+function renderCalendar(){
   calendarEl.innerHTML="";
-  const firstDay = new Date(year,month,1).getDay();
-  const lastDate = new Date(year,month+1,0).getDate();
-  const daysInWeek=["Dim","Lun","Mar","Mer","Jeu","Ven","Sam"];
-  daysInWeek.forEach(d=>{const div=document.createElement("div"); div.style.fontWeight="bold"; div.style.background="#333"; div.textContent=d; calendarEl.appendChild(div);});
+  const firstDay = new Date(currentYear,currentMonth,1).getDay();
+  const lastDate = new Date(currentYear,currentMonth+1,0).getDate();
+  const days=["Dim","Lun","Mar","Mer","Jeu","Ven","Sam"];
+  days.forEach(d=>{
+    const div=document.createElement("div"); div.style.fontWeight="bold"; div.style.background="#333"; div.textContent=d; calendarEl.appendChild(div);
+  });
   for(let i=0;i<firstDay;i++) calendarEl.appendChild(document.createElement("div"));
   for(let d=1;d<=lastDate;d++){
     const div=document.createElement("div");
-    const dateStr=`${year}-${String(month+1).padStart(2,"0")}-${String(d).padStart(2,"0")}`;
+    const dateStr=`${currentYear}-${String(currentMonth+1).padStart(2,"0")}-${String(d).padStart(2,"0")}`;
     div.textContent=d;
     if(entries[dateStr]){
       let total=0;
@@ -276,95 +235,92 @@ function renderCalendar(month=currentMonth,year=currentYear){
         total+=en.result;
         div.appendChild(eDiv);
       });
-      div.style.background = total>=0?"#0f9d58":"#ff4c4c";
+      div.style.background=total>=0?"#0f9d58":"#b71c1c";
     }
     div.addEventListener("dblclick",()=>{
       entryDateInput.value=dateStr;
-      if(entries[dateStr] && entries[dateStr].length>0){
-        const firstEntry = entries[dateStr][0];
-        entryAssetInput.value = firstEntry.asset;
-        entryTypeInput.value = firstEntry.type;
-        entryPriceInput.value = firstEntry.price;
-        entryResultInput.value = firstEntry.result;
-        entryDescriptionInput.value = firstEntry.desc;
-      }else{
-        entryAssetInput.value=""; entryTypeInput.value="achat"; entryPriceInput.value=""; entryResultInput.value=""; entryDescriptionInput.value="";
-      }
+      const firstEntry = entries[dateStr] ? entries[dateStr][0] : {};
+      entryAssetInput.value = firstEntry.asset||"";
+      entryTypeInput.value = firstEntry.type||"achat";
+      entryPriceInput.value = firstEntry.price||"";
+      entryResultInput.value = firstEntry.result||"";
+      entryDescriptionInput.value = firstEntry.desc||"";
     });
     calendarEl.appendChild(div);
   }
-  currentMonthLabel.textContent=new Date(year,month).toLocaleString('fr-FR',{month:'long',year:'numeric'});
+  currentMonthLabel.textContent=new Date(currentYear,currentMonth).toLocaleString('fr-FR',{month:'long',year:'numeric'});
 }
-
 prevMonthBtn.addEventListener("click",()=>{currentMonth--; if(currentMonth<0){currentMonth=11; currentYear--;} renderCalendar();});
 nextMonthBtn.addEventListener("click",()=>{currentMonth++; if(currentMonth>11){currentMonth=0; currentYear++;} renderCalendar();});
-
-document.querySelector(".addEntry").addEventListener("click",async ()=>{
-  const user = auth.currentUser;
+document.querySelector("#section-calendar .addEntry").addEventListener("click", async()=>{
+  const user=auth.currentUser;
   if(!user){alert("Connecte-toi !"); return;}
-  const date = entryDateInput.value;
+  const date=entryDateInput.value;
   if(!date){alert("Choisis une date !"); return;}
-  const asset = entryAssetInput.value;
-  const type = entryTypeInput.value;
-  const price = parseFloat(entryPriceInput.value);
-  const result = parseFloat(entryResultInput.value);
-  const desc = entryDescriptionInput.value;
-  
-  // upload photo si sélectionnée
-  let photoURL = "";
+  const asset=entryAssetInput.value;
+  const type=entryTypeInput.value;
+  const price=parseFloat(entryPriceInput.value);
+  const result=parseFloat(entryResultInput.value);
+  const desc=entryDescriptionInput.value;
+  if(!entries[date]) entries[date]=[];
+  let photoUrl="";
   if(entryPhotoInput.files.length>0){
     const file = entryPhotoInput.files[0];
-    const ref = storage.ref().child(`photos/${user.uid}/${date}/${file.name}`);
+    const ref = storage.ref().child(`photos/${user.uid}_${Date.now()}_${file.name}`);
     await ref.put(file);
-    photoURL = await ref.getDownloadURL();
+    photoUrl = await ref.getDownloadURL();
   }
-
-  if(!entries[date]) entries[date]=[];
-  entries[date].push({asset,type,price,result,desc,photo:photoURL});
+  entries[date].push({asset,type,price,result,desc,photoUrl});
+  await db.collection("users").doc(user.uid).collection("journal").add({date,asset,type,price,result,desc,photoUrl});
   renderCalendar();
-  await db.collection("users").doc(user.uid).collection("journal").add({date,asset,type,price,result,desc,photo:photoURL,userId:user.uid});
   entryAssetInput.value=""; entryPriceInput.value=""; entryResultInput.value=""; entryDescriptionInput.value=""; entryPhotoInput.value="";
 });
-
-// Charger les entrées Firestore
 async function loadUserData(uid){
   entries={};
   const snapshot = await db.collection("users").doc(uid).collection("journal").get();
   snapshot.forEach(doc=>{
     const data = doc.data();
     if(!entries[data.date]) entries[data.date]=[];
-    entries[data.date].push({asset:data.asset,type:data.type,price:data.price,result:data.result,desc:data.desc,photo:data.photo});
+    entries[data.date].push(data);
   });
   renderCalendar();
 }
-
 renderCalendar();
 
-// --- Stratégies ---
-const strategiesContainer = document.getElementById("strategiesContainer");
-document.querySelector(".addStrategy").addEventListener("click", ()=>{
-  const stratDiv = document.createElement("div");
-  stratDiv.className="strategy";
-  stratDiv.innerHTML=`<strong>Nouvelle stratégie</strong><div><textarea placeholder="Description stratégie"></textarea></div>`;
-  strategiesContainer.appendChild(stratDiv);
-});
-
-// --- Actualités widget (TradingView) ---
-const newsList = document.getElementById("newsList");
-function loadDummyNews(){ // à remplacer par API réelle
-  const sampleNews = [
-    {title:"Gold monte après inflation US",url:"#"},
-    {title:"USD index reste stable",url:"#"},
-    {title:"Annonce BCE impacte EUR/USD",url:"#"}
-  ];
-  sampleNews.forEach(n=>{
-    const div = document.createElement("div");
-    div.style.padding="0.5rem";
-    div.innerHTML=`<a href="${n.url}" target="_blank" style="color:#0f9d58;text-decoration:none;">${n.title}</a>`;
-    newsList.appendChild(div);
+// --- Photos ---
+const photosGallery = document.getElementById("photosGallery");
+async function loadPhotos(uid){
+  photosGallery.innerHTML="";
+  const snapshot = await db.collection("users").doc(uid).collection("journal").get();
+  snapshot.forEach(doc=>{
+    const data=doc.data();
+    if(data.photoUrl){
+      const imgDiv=document.createElement("div");
+      imgDiv.style.marginBottom="1rem";
+      imgDiv.innerHTML=`<img src="${data.photoUrl}" style="width:100%;border-radius:8px;"><p>${data.desc||""}</p>`;
+      photosGallery.appendChild(imgDiv);
+    }
   });
 }
-loadDummyNews();
+auth.onAuthStateChanged(user=>{if(user) loadPhotos(user.uid);});
+
+// --- News carousel (TradingView example) ---
+const newsCarousel = document.getElementById("newsCarousel");
+async function loadNews(){
+  const apiKey = "d3ber21r01qqg7bua73gd3ber21r01qqg7bua740";
+  const res = await fetch(`https://finnhub.io/api/v1/news?category=general&token=${apiKey}`);
+  const data = await res.json();
+  newsCarousel.innerHTML="";
+  data.forEach(item=>{
+    const div = document.createElement("div");
+    div.className="news-item";
+    let dateText = new Date(item.datetime*1000);
+    let dateStr = (new Date().toDateString() === dateText.toDateString()) ? `Aujourd'hui ${dateText.getHours()}:${String(dateText.getMinutes()).padStart(2,"0")}` : dateText.toLocaleString();
+    div.innerHTML=`<a href="${item.url}" target="_blank" style="color:#0f9d58;text-decoration:none;"><strong>${item.headline}</strong></a><br><span style="font-size:0.8rem;">${dateStr}</span>`;
+    newsCarousel.appendChild(div);
+  });
+}
+loadNews();
 </script>
 </body>
 </html>
