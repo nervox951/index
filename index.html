@@ -1,8 +1,8 @@
 <!DOCTYPE html>
 <html lang="fr">
 <head>
-<meta charset="utf-8" />
-<meta name="viewport" content="width=device-width,initial-scale=1" />
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Trade Board Pro</title>
 
 <!-- Firebase -->
@@ -10,363 +10,122 @@
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
 
-<!-- TradingView widgets + Icons -->
-<script src="https://s3.tradingview.com/tv.js"></script>
+<!-- Chart.js -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<!-- FontAwesome -->
 <script src="https://kit.fontawesome.com/a076d05399.js" crossorigin="anonymous"></script>
 
 <style>
-  :root{
-    --blue:#1a73e8; --muted:#f5f6fa; --card:#ffffff; --accent:#155ab6;
-    --success:#d4edda; --danger:#f8d7da;
-  }
-  *{box-sizing:border-box}
-  body,html{height:100%;margin:0;font-family:Inter, "Segoe UI", Roboto, sans-serif;background:var(--muted);color:#111}
-  header{background:var(--blue);color:#fff;padding:14px 16px;display:flex;align-items:center;justify-content:space-between;gap:12px}
-  header h1{margin:0;font-size:18px;cursor:pointer}
-  .container{max-width:1100px;margin:20px auto;padding:0 16px}
-  /* landing */
-  .landing{display:flex;gap:18px;align-items:flex-start;flex-wrap:wrap}
-  .hero{flex:1;min-width:280px;background:linear-gradient(135deg,#1a73e8 0%,#2b8cff 100%);color:#fff;padding:18px;border-radius:12px;box-shadow:0 6px 24px rgba(26,115,232,0.15)}
-  .hero h2{margin:0 0 8px;font-size:24px}
-  .hero p{margin:0 0 12px;opacity:0.95}
-  .quotes{background:var(--card);padding:12px;border-radius:12px;flex-basis:320px;min-width:220px;box-shadow:0 6px 18px rgba(0,0,0,0.06)}
-  .quotes h3{margin:0 0 8px;font-size:16px}
-  .quote{font-style:italic;margin-bottom:8px}
-  .widgets{display:flex;gap:12px;margin-top:12px;flex-wrap:wrap}
-  .widget{background:var(--card);padding:12px;border-radius:10px;box-shadow:0 6px 18px rgba(0,0,0,0.06);min-width:160px}
-  .widget h4{margin:0 0 6px;font-size:13px}
-  .widget .val{font-weight:700;font-size:18px}
-  /* auth */
-  #authArea{max-width:420px;margin:18px auto;background:var(--card);padding:12px;border-radius:12px;box-shadow:0 6px 18px rgba(0,0,0,0.06)}
-  input,select,textarea{width:100%;padding:8px;margin:6px 0;border-radius:8px;border:1px solid #dcdcdc;font-size:14px}
-  button{background:var(--blue);color:#fff;border:none;padding:10px;border-radius:8px;cursor:pointer;font-weight:600}
-  button.ghost{background:#fff;color:#111;border:1px solid #e6e6e6}
-  .row{display:flex;gap:8px}
-  .row > *{flex:1}
-  /* nav */
-  nav.mainNav{display:flex;gap:8px;margin:14px 0}
-  nav.mainNav button{flex:1;padding:10px;border-radius:10px;border:1px solid #e6e6e6;background:#fff;cursor:pointer}
-  nav.mainNav button.active{background:var(--blue);color:#fff;border-color:var(--blue)}
-  /* pages */
-  .page{display:none}
-  .page.active{display:block}
-  .card{background:var(--card);padding:12px;border-radius:12px;box-shadow:0 6px 18px rgba(0,0,0,0.06);margin-bottom:12px}
-  /* strategies */
-  .strategies-list{display:flex;flex-direction:column;gap:10px}
-  .strategy-card{border-radius:10px;padding:10px;border:1px solid #eee;display:flex;align-items:flex-start;gap:12px}
-  .strategy-card h4{margin:0}
-  .conditions{display:flex;flex-direction:column;gap:6px;margin-top:8px}
-  .cond-row{display:flex;gap:8px;align-items:center}
-  .progress{height:14px;background:#f0f0f0;border-radius:8px;overflow:hidden;margin-top:8px}
-  .progress > i{display:block;height:100%;background:var(--blue);width:0;text-align:center;color:#fff;font-size:11px;line-height:14px}
-  .strategy-actions{margin-left:auto;display:flex;gap:6px}
-  /* calendar */
-  .calendar-toolbar{display:flex;gap:8px;align-items:center;margin-bottom:12px}
-  .calendar-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:6px}
-  .cal-day{background:#fff;border-radius:8px;min-height:100px;padding:8px;border:1px solid #eee;position:relative;overflow:auto}
-  .cal-day .date{position:absolute;top:6px;right:8px;font-weight:700;color:#666;font-size:12px}
-  .cal-entry{margin-top:18px;font-size:13px;display:flex;align-items:center;gap:8px}
-  .cal-entry .icon{width:20px;text-align:center}
-  .cal-entry .del-check{margin-left:auto}
-  .day-stat{font-weight:700;margin-top:8px}
-  /* modals */
-  .modal{position:fixed;left:0;top:0;width:100%;height:100%;display:none;align-items:center;justify-content:center;background:rgba(0,0,0,0.45);z-index:200}
-  .modal .content{background:#fff;padding:16px;border-radius:12px;width:96%;max-width:520px;max-height:90vh;overflow:auto}
-  .flex{display:flex;gap:8px;align-items:center}
-  /* responsive */
-  @media (max-width:900px){
-    .landing{flex-direction:column}
-    .calendar-grid{grid-template-columns:repeat(7,1fr)}
-  }
-  /* intro screen */
-  #introScreen{position:fixed;top:0;left:0;width:100%;height:100%;background:var(--blue);color:#fff;display:flex;justify-content:center;align-items:center;flex-direction:column;transition:transform 0.9s ease-out;z-index:1000;cursor:pointer}
-  #introScreen.hide{transform:translateX(-100%)}
+/* --- Reset & body --- */
+body, html{margin:0;padding:0;font-family:'Segoe UI',sans-serif;background:#121212;color:#e0e0e0;overflow-x:hidden;}
+a{text-decoration:none;color:#1a73e8;}
+header{background:#1a73e8;color:#fff;padding:1rem;text-align:center;font-size:1.8rem;font-weight:bold;position:sticky;top:0;z-index:50;}
+
+/* --- Intro Screen --- */
+#introScreen{position:fixed;top:0;left:0;width:100%;height:100%;background:#121212;color:#fff;display:flex;justify-content:center;align-items:center;flex-direction:column;transition:transform 1s ease-out;z-index:100;}
+#introScreen.hide{transform:translateX(-100%);}
+#introScreen h1{font-size:3rem;margin:0;}
+#introScreen p{font-size:1.2rem;margin-top:1rem;text-align:center;max-width:600px;line-height:1.4;}
+
+/* --- Navigation --- */
+nav{display:flex;justify-content:space-around;background:#1f1f1f;padding:0.5rem 0;position:sticky;top:0;z-index:40;}
+nav button{padding:0.6rem 1.2rem;border:none;border-radius:6px;font-weight:bold;cursor:pointer;transition:0.3s;background:#333;color:#e0e0e0;}
+nav button.active{background:#1a73e8;color:#fff;}
+
+/* --- Sections --- */
+section{padding:1rem;}
+.card{background:#1e1e1e;margin-bottom:1rem;padding:1rem;border-radius:10px;box-shadow:0 4px 12px rgba(0,0,0,0.3);}
+
+/* --- Market Widget --- */
+.market{display:flex;justify-content:space-between;margin-bottom:0.5rem;padding:0.5rem 0;border-bottom:1px solid #333;}
+.market span{font-weight:bold;}
+
+/* --- Auth Container --- */
+#authContainer{max-width:400px;margin:1rem auto;background:#1e1e1e;padding:1rem;border-radius:10px;box-shadow:0 4px 12px rgba(0,0,0,0.3);}
+input,textarea,select{width:100%;padding:0.4rem;margin:0.2rem 0;border-radius:5px;border:1px solid #555;background:#121212;color:#fff;}
+button.authButton{background:#1a73e8;color:#fff;padding:0.5rem;border:none;border-radius:6px;cursor:pointer;width:100%;margin-top:0.5rem;transition:0.2s;}
+button.authButton:hover{background:#155ab6;}
+
+/* --- Calendrier --- */
+.calendar{display:grid;grid-template-columns:repeat(7,1fr);gap:1px;background:#333;border-radius:8px;overflow:hidden;}
+.calendar div{background:#1e1e1e;min-height:80px;padding:0.4rem;position:relative;font-size:0.9rem;cursor:pointer;transition:0.3s;}
+.calendar div:hover{background:#2a2a2a;}
+.calendar div span{position:absolute;top:3px;right:5px;font-size:0.75rem;font-weight:bold;}
+.entry{margin-top:1.2rem;font-size:0.75rem;display:flex;align-items:center;transition:0.2s;}
+.entry i{margin-right:5px;}
+.entry .gain{color:green;font-weight:bold;}
+.entry .loss{color:red;font-weight:bold;}
+.entry .edit{cursor:pointer;text-decoration:underline;}
+
+/* --- Floating Home Button --- */
+#homeBtn{position:fixed;bottom:20px;right:20px;width:50px;height:50px;background:#1a73e8;color:#fff;border-radius:50%;display:flex;justify-content:center;align-items:center;font-size:1.5rem;cursor:pointer;z-index:60;box-shadow:0 4px 12px rgba(0,0,0,0.5);}
 </style>
 </head>
 <body>
 
-<!-- Intro écran (appuie pour fermer ou auto 3s) -->
+<!-- Intro -->
 <div id="introScreen">
-  <h1 style="font-size:32px;margin:0">Trade Board Pro</h1>
-  <p style="max-width:640px;text-align:center;font-size:16px;margin-top:12px">Ton carnet de trading — stratégies, journal, calendrier économique et widgets marchés en un seul endroit.</p>
+  <h1>Trade Board Pro</h1>
+  <p>Bienvenue sur votre application de suivi de stratégies et journal de trading.<br>
+  Planifiez, suivez vos positions et analysez vos performances.<br>
+  "Le succès en trading vient de la discipline et de l'organisation."</p>
 </div>
 
-<header>
-  <h1 id="brand">Trade Board Pro</h1>
-  <div style="display:flex;gap:8px;align-items:center">
-    <div id="userBadge" style="color:#fff;font-weight:600;opacity:0.95"></div>
-    <button id="openLogin" class="ghost" style="background:transparent;color:#fff;border:1px solid rgba(255,255,255,0.2)">Se connecter</button>
-  </div>
-</header>
+<header id="mainHeader">Trade Board Pro</header>
 
-<div class="container">
-
-  <!-- LANDING (home visual) -->
-  <div id="landing" class="page active">
-    <div class="landing">
-      <div class="hero card">
-        <h2>Bienvenue sur Trade Board Pro</h2>
-        <p>Ton espace pour organiser tes stratégies, suivre tes positions, visualiser tes résultats et garder une trace précise de tes trades.</p>
-
-        <!-- TradingView Ticker Tape widget (résumé multi-symboles) -->
-        <div style="margin-top:12px" id="tv-ticker-wrapper">
-          <div class="tradingview-widget-container">
-            <div id="tv-ticker"></div>
-            <script type="text/javascript" src="https://s3.tradingview.com/external-embedding/embed-widget-ticker-tape.js" async>
-            {
-              "symbols": [
-                { "proName": "FOREXCOM:XAUUSD", "title": "Gold" },
-                { "proName": "OANDA:USDJPY", "title": "USD/JPY" },
-                { "proName": "CURRENCYCOM:USDOLLAR", "title": "USD Index" },
-                { "proName": "INDEX:DJI", "title": "Dow Jones" },
-                { "proName": "INDEX:NAS100", "title": "Nasdaq 100" }
-              ],
-              "colorTheme": "light",
-              "isTransparent": false,
-              "displayMode": "adaptive",
-              "locale": "fr"
-            }
-            </script>
-          </div>
-        </div>
-
-        <div class="widgets" style="margin-top:12px">
-          <!-- TradingView mini widgets -->
-          <div class="widget" id="wg-gold">
-            <h4>XAU/USD (Gold)</h4>
-            <div id="tv_g_old" style="height:60px"></div>
-            <script type="text/javascript">
-              new TradingView.MiniWidget({
-                "container_id": "tv_g_old",
-                "symbol": "FOREXCOM:XAUUSD",
-                "width": "100%",
-                "height": "70",
-                "locale": "fr",
-                "dateRange": "1D",
-                "colorTheme": "light",
-                "trendLineColor": "rgba(41,98,255,1)",
-                "underLineColor": "rgba(41,98,255,0.2)",
-                "isTransparent": false,
-                "autosize": true,
-                "largeChartUrl": ""
-              });
-            </script>
-          </div>
-
-          <div class="widget" id="wg-usd">
-            <h4>US Dollar Index (approx)</h4>
-            <div id="tv_usd" style="height:60px"></div>
-            <script type="text/javascript">
-              new TradingView.MiniWidget({
-                "container_id": "tv_usd",
-                "symbol": "CURRENCYCOM:USDOLLAR",
-                "width": "100%",
-                "height": "70",
-                "locale": "fr",
-                "colorTheme": "light",
-                "isTransparent": false,
-                "autosize": true
-              });
-            </script>
-          </div>
-
-          <div class="widget" id="wg-calendar">
-            <h4>Événements</h4>
-            <div style="font-size:13px;margin-top:6px">Calendrier économique (Investing.com) — cliquez pour ouvrir la page complète.</div>
-            <div style="margin-top:8px"><a href="https://www.investing.com/economic-calendar/" target="_blank" style="color:var(--blue)">Ouvrir Investing.com</a></div>
-          </div>
-        </div>
-
-        <div style="margin-top:14px">
-          <button id="toApp">Accéder à l'application</button>
-        </div>
-      </div>
-
-      <div class="quotes card">
-        <h3>Conseils & Citations</h3>
-        <div id="quotesContainer">
-          <div class="quote" style="font-size:15px">"Planifie ton trade, trade ton plan." — <strong>Anonymous</strong></div>
-          <div class="quote" style="font-family:serif;color:#333">« Le marché est un professeur sévère — apprends de tes erreurs. » — <em>Traders Notes</em></div>
-          <div class="quote" style="font-weight:700">"Risk small, learn big." — Mentor</div>
-        </div>
-
-        <div style="margin-top:12px">
-          <h4>Idées à ajouter</h4>
-          <ul>
-            <li>Vue portefeuille (balance + P&L)</li>
-            <li>Graphiques intraday (candles)</li>
-            <li>Alertes push (Firebase Cloud Messaging)</li>
-            <li>Import / export CSV (déjà inclus)</li>
-            <li>Intégration price feed (AlphaVantage, Finnhub)</li>
-          </ul>
-        </div>
-
-        <!-- News widget (TradingView) -->
-        <div style="margin-top:12px">
-          <div class="tradingview-widget-container">
-            <div id="tv-news"></div>
-            <script type="text/javascript" src="https://s3.tradingview.com/external-embedding/embed-widget-news.js" async>
-            {
-              "symbolsGroups": [
-                {"name":"Indices","symbols":[{"name":"S&P 500","symbol":"INDEX:SPX"},{"name":"Dow Jones","symbol":"INDEX:DJI"}]}
-              ],
-              "showTopAuthors": true,
-              "showPublishDate": true,
-              "colorTheme": "light",
-              "isTransparent": false,
-              "locale": "fr"
-            }
-            </script>
-          </div>
-        </div>
-
-      </div>
-    </div>
-
-    <!-- Investing.com calendar embedded (light integration) -->
-    <div style="margin-top:12px" class="card">
-      <h3>Calendrier économique (Investing.com)</h3>
-      <!-- Note: Investing.com fournit un iframe/widget generator — ceci ouvre leur site en iframe. -->
-      <iframe src="https://www.investing.com/economic-calendar/" width="100%" height="420" frameborder="0" scrolling="yes" style="border-radius:8px"></iframe>
-    </div>
-  </div>
-
-  <!-- APP (after login / toApp) -->
-  <div id="app" class="page">
-    <!-- auth area -->
-    <div id="authArea" class="card" style="display:flex;gap:12px;align-items:center;justify-content:space-between">
-      <div>
-        <div style="font-size:14px">Connecté en tant que <span id="userNameDisplay">—</span></div>
-        <div style="font-size:12px;color:#666" id="userEmailDisplay"></div>
-      </div>
-      <div style="display:flex;gap:8px">
-        <button id="btnCreateStrategy" class="ghost" style="background:#fff;border:1px solid #eee">Nouvelle stratégie</button>
-        <button id="btnLogout" style="background:#ff4d4f">Déconnexion</button>
-      </div>
-    </div>
-
-    <!-- top nav -->
-    <nav class="mainNav">
-      <button id="navStrategies" class="active">Stratégies</button>
-      <button id="navCalendar">Calendrier</button>
-      <button id="navLanding">Accueil</button>
-    </nav>
-
-    <!-- Strategies page -->
-    <div id="pageStrategies" class="page active">
-      <div class="card">
-        <h3>Mes stratégies</h3>
-        <div style="margin-top:8px">
-          <div id="strategiesList" class="strategies-list"></div>
-        </div>
-      </div>
-    </div>
-
-    <!-- Calendar page -->
-    <div id="pageCalendar" class="page">
-      <div class="card">
-        <div style="display:flex;justify-content:space-between;align-items:center">
-          <h3>Calendrier & Journal</h3>
-          <div id="monthProfit" style="font-weight:700">Profit mois: 0</div>
-        </div>
-
-        <div class="calendar-toolbar" style="margin-top:10px">
-          <button id="prevM" class="ghost">‹</button>
-          <div id="currentMonthLabel" style="font-weight:700"></div>
-          <button id="nextM" class="ghost">›</button>
-          <div style="margin-left:auto;display:flex;gap:8px">
-            <button id="deleteSelected" class="ghost">Supprimer sélection</button>
-            <button id="exportCSV" class="ghost">Exporter CSV</button>
-          </div>
-        </div>
-
-        <div id="calendarGrid" class="calendar-grid"></div>
-      </div>
-
-      <div class="card">
-        <h4>Ajouter / Modifier entrée</h4>
-        <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
-          <input type="date" id="formDate">
-          <select id="formAsset">
-            <option>EURUSD</option><option>GBPUSD</option><option>BTCUSD</option>
-            <option>ETHUSD</option><option>USDJPY</option><option>XAUUSD</option>
-            <option>DJ30</option><option>NAS100</option><option>AUTRE</option>
-          </select>
-          <select id="formType"><option value="achat">Achat</option><option value="vente">Vente</option><option value="deposit">Dépôt</option></select>
-          <input id="formPrice" placeholder="Prix (optionnel)" type="number" step="any"/>
-          <input id="formResult" placeholder="Résultat (gain/perte) ex: 25 ou -10" type="number" step="any"/>
-          <input id="formDeposit" placeholder="Dépôt (si type Dépôt)" type="number" step="any"/>
-          <textarea id="formDesc" placeholder="Description" style="grid-column:1/3"></textarea>
-        </div>
-        <div style="display:flex;gap:8px;margin-top:8px">
-          <button id="saveEntry">Enregistrer</button>
-          <button id="clearEntry" class="ghost">Réinitialiser</button>
-        </div>
-      </div>
-    </div>
-
-  </div>
-
+<!-- Auth -->
+<div id="authContainer">
+  <h2>Connexion / Créer un compte</h2>
+  <input type="email" id="authEmail" placeholder="Adresse e-mail">
+  <input type="password" id="authPassword" placeholder="Mot de passe">
+  <button class="authButton" id="signInBtn">Se connecter</button>
+  <button class="authButton" id="signUpBtn">Créer un compte</button>
+  <button class="authButton" id="signOutBtn" style="display:none;">Se déconnecter</button>
+  <div id="emailWarning" style="color:red;font-size:0.85rem;display:none;margin-top:0.5rem;">Email non vérifié !</div>
 </div>
 
-<!-- Modals -->
-<div id="modalStrategy" class="modal">
-  <div class="content">
-    <h3 id="modalStrTitle">Nouvelle stratégie</h3>
-    <input id="strName" placeholder="Nom stratégie"/>
-    <textarea id="strDesc" placeholder="Description (optionnel)"></textarea>
-    <div style="margin:8px 0;display:flex;gap:8px">
-      <input id="newCond" placeholder="Nouvelle condition (ex: RSI < 30)"/>
-      <button id="addCondBtn" class="ghost">Ajouter</button>
-    </div>
-    <div id="condsContainer" style="margin-top:8px"></div>
-    <div style="display:flex;gap:8px;margin-top:12px">
-      <button id="saveStrategy">Sauvegarder</button>
-      <button id="cancelStrategy" class="ghost">Annuler</button>
-    </div>
-  </div>
-</div>
+<!-- Navigation -->
+<nav style="display:none;" id="mainNav">
+  <button id="tab-home" class="active">Accueil</button>
+  <button id="tab-strategies">Stratégies</button>
+  <button id="tab-calendar">Calendrier</button>
+</nav>
 
-<div id="modalEditEntry" class="modal">
-  <div class="content">
-    <h3>Modifier l'entrée</h3>
-    <input type="date" id="editDate"/>
-    <select id="editAsset"><option>EURUSD</option><option>GBPUSD</option><option>BTCUSD</option><option>XAUUSD</option><option>DJ30</option><option>NAS100</option><option>AUTRE</option></select>
-    <select id="editType"><option value="achat">Achat</option><option value="vente">Vente</option><option value="deposit">Dépôt</option></select>
-    <input id="editPrice" type="number" step="any" placeholder="Prix"/>
-    <input id="editResult" type="number" step="any" placeholder="Résultat"/>
-    <input id="editDeposit" type="number" step="any" placeholder="Dépôt"/>
-    <textarea id="editDesc" placeholder="Description"></textarea>
-    <div style="display:flex;gap:8px;margin-top:8px">
-      <button id="updateEntry">Mettre à jour</button>
-      <button id="cancelEdit" class="ghost">Annuler</button>
-      <button id="deleteEntry" class="ghost" style="margin-left:auto;color:#c00">Supprimer</button>
-    </div>
-  </div>
-</div>
-
-<!-- Auth container (top) - kept for login inputs -->
-<div id="authContainer" style="position:fixed;right:16px;top:80px;z-index:800;max-width:360px;display:none">
+<!-- Sections -->
+<section id="section-home" style="display:none;">
+  <h2>Résumé Marchés</h2>
+  <div id="marketContainer" class="card"></div>
+  <h2>Calendrier économique</h2>
+  <a href="https://www.investing.com/economic-calendar/" target="_blank" class="card" style="display:block;">Voir le calendrier économique complet</a>
+  <h2>Citations Trading</h2>
   <div class="card">
-    <h3>Connexion / Inscription</h3>
-    <input id="authEmail" placeholder="Email" type="email"/>
-    <input id="authPassword" placeholder="Mot de passe" type="password"/>
-    <div style="display:flex;gap:8px">
-      <button id="signInBtn">Se connecter</button>
-      <button id="signUpBtn" class="ghost">Créer compte</button>
-    </div>
-    <div style="margin-top:8px;display:flex;gap:8px">
-      <button id="googleSignInBtn" class="ghost">Google</button>
-      <button id="closeAuth" class="ghost">Fermer</button>
-    </div>
-    <div id="emailWarning" style="color:#c00;margin-top:8px;display:none"></div>
+    <p>"Tradez avec votre cerveau, pas avec vos émotions." - Alexander Elder</p>
+    <p>"Le marché peut rester irrationnel plus longtemps que vous ne pouvez rester solvable." - John Maynard Keynes</p>
   </div>
-</div>
+  <canvas id="profitChart" height="100"></canvas>
+</section>
+
+<section id="section-strategies" style="display:none;">
+  <h2>Mes stratégies</h2>
+  <div id="strategyContainer" class="card"></div>
+  <button id="addStrategyBtn" class="authButton">Ajouter une stratégie</button>
+</section>
+
+<section id="section-calendar" style="display:none;">
+  <h2>Calendrier & Journal</h2>
+  <div style="display:flex;justify-content:space-between;margin-bottom:0.5rem;">
+    <button id="prevMonth">&lt; Mois précédent</button>
+    <span id="currentMonth" style="font-weight:bold;"></span>
+    <button id="nextMonth">Mois suivant &gt;</button>
+  </div>
+  <div class="calendar" id="calendar"></div>
+</section>
+
+<div id="homeBtn"><i class="fas fa-home"></i></div>
 
 <script>
-/* ======================
-  Firebase config - Remplace si besoin
-   ====================== */
+// --- Firebase Config ---
 const firebaseConfig = {
   apiKey: "AIzaSyACFzFXKK_1EH6_PVgaQQXD3fc8mBvQRvg",
   authDomain: "perso-journaling.firebaseapp.com",
@@ -379,458 +138,102 @@ firebase.initializeApp(firebaseConfig);
 const auth = firebase.auth();
 const db = firebase.firestore();
 
-/* ======================
-   UI elements
-   ====================== */
-const introScreen = document.getElementById('introScreen');
-function hideIntro(){ introScreen.classList.add('hide'); setTimeout(()=>introScreen.style.display='none',900); }
-introScreen.addEventListener('click', hideIntro);
-setTimeout(hideIntro, 3000);
-
-const landing = document.getElementById('landing');
-const app = document.getElementById('app');
-const toApp = document.getElementById('toApp');
-const openLogin = document.getElementById('openLogin');
-const brand = document.getElementById('brand');
-const userBadge = document.getElementById('userBadge');
-const userNameDisplay = document.getElementById('userNameDisplay');
-const userEmailDisplay = document.getElementById('userEmailDisplay');
-
-const navStrategies = document.getElementById('navStrategies');
-const navCalendar = document.getElementById('navCalendar');
-const navLanding = document.getElementById('navLanding');
-
-const pageStrategies = document.getElementById('pageStrategies');
-const pageCalendar = document.getElementById('pageCalendar');
-
-const strategiesList = document.getElementById('strategiesList');
-const modalStrategy = document.getElementById('modalStrategy');
-const strName = document.getElementById('strName');
-const strDesc = document.getElementById('strDesc');
-const newCond = document.getElementById('newCond');
-const addCondBtn = document.getElementById('addCondBtn');
-const condsContainer = document.getElementById('condsContainer');
-const saveStrategy = document.getElementById('saveStrategy');
-const cancelStrategy = document.getElementById('cancelStrategy');
-const btnCreateStrategy = document.getElementById('btnCreateStrategy');
-
-const calendarGrid = document.getElementById('calendarGrid');
-const currentMonthLabel = document.getElementById('currentMonthLabel');
-const prevM = document.getElementById('prevM');
-const nextM = document.getElementById('nextM');
-const monthProfit = document.getElementById('monthProfit');
-
-const formDate = document.getElementById('formDate');
-const formAsset = document.getElementById('formAsset');
-const formType = document.getElementById('formType');
-const formPrice = document.getElementById('formPrice');
-const formResult = document.getElementById('formResult');
-const formDesc = document.getElementById('formDesc');
-const formDeposit = document.getElementById('formDeposit');
-const saveEntry = document.getElementById('saveEntry');
-const clearEntry = document.getElementById('clearEntry');
-const deleteSelected = document.getElementById('deleteSelected');
-
-const modalEditEntry = document.getElementById('modalEditEntry');
-const editDate = document.getElementById('editDate');
-const editAsset = document.getElementById('editAsset');
-const editType = document.getElementById('editType');
-const editPrice = document.getElementById('editPrice');
-const editResult = document.getElementById('editResult');
-const editDesc = document.getElementById('editDesc');
-const editDeposit = document.getElementById('editDeposit');
-const updateEntry = document.getElementById('updateEntry');
-const cancelEdit = document.getElementById('cancelEdit');
-const deleteEntryBtn = document.getElementById('deleteEntry');
-
-/* auth UI */
-const authContainerBox = document.getElementById('authContainer');
-const openLoginBtn = document.getElementById('openLogin');
-const signInBtn = document.getElementById('signInBtn');
-const signUpBtn = document.getElementById('signUpBtn');
-const googleSignInBtn = document.getElementById('googleSignInBtn');
-const closeAuth = document.getElementById('closeAuth');
-const signOutBtnTop = document.getElementById('btnLogout');
-const authEmail = document.getElementById('authEmail');
-const authPassword = document.getElementById('authPassword');
-const emailWarning = document.getElementById('emailWarning');
-
-let currentUser = null;
-let strategies = {};
-let entries = {};
-let selectedToDelete = new Set();
-let editEntryDoc = null;
-let currentStrategyEditing = null;
-
-/* helper to show pages */
-function showPage(name){
-  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
-  if(name==='landing') landing.classList.add('active');
-  if(name==='app') app.classList.add('active');
-  if(name==='strategies'){ app.classList.add('active'); pageStrategies.classList.add('active'); pageCalendar.classList.remove('active'); navStrategies.classList.add('active'); navCalendar.classList.remove('active'); }
-  if(name==='calendar'){ app.classList.add('active'); pageCalendar.classList.add('active'); pageStrategies.classList.remove('active'); navCalendar.classList.add('active'); navStrategies.classList.remove('active'); }
+// --- Twelve Data ---
+const TWELVE_DATA_API_KEY = "32d3cd3d96e14670ae9f631cba860d27";
+const marketSymbols = ["XAU/USD","US Dollar Index","EUR/USD","GBP/USD","BTC/USD"];
+const marketContainer = document.getElementById("marketContainer");
+async function fetchMarkets(){
+  marketContainer.innerHTML="";
+  for(const symbol of marketSymbols){
+    try{
+      const res = await fetch(`https://api.twelvedata.com/price?symbol=${encodeURIComponent(symbol)}&apikey=${TWELVE_DATA_API_KEY}`);
+      const data = await res.json();
+      const price = data.price ? parseFloat(data.price).toFixed(2) : "N/A";
+      const div = document.createElement("div");
+      div.className = "market";
+      div.innerHTML = `<span>${symbol}</span><span>${price}</span>`;
+      marketContainer.appendChild(div);
+    }catch(e){console.log(e);}
+  }
 }
 
-/* initial actions */
-toApp.addEventListener('click', ()=> {
-  if(auth.currentUser) { showPage('strategies'); }
-  else { authContainerBox.style.display = 'block'; window.scrollTo({top:0,behavior:'smooth'}) }
-});
-brand.addEventListener('click', ()=> showPage('landing'));
-openLogin.addEventListener('click', ()=> { authContainerBox.style.display = authContainerBox.style.display === 'block' ? 'none' : 'block'; authContainerBox.scrollIntoView({behavior:'smooth'}); });
+// --- Intro Screen ---
+const introScreen = document.getElementById("introScreen");
+introScreen.addEventListener("click",()=>{introScreen.classList.add("hide");setTimeout(()=>{introScreen.style.display="none";},1000);});
+setTimeout(()=>{introScreen.classList.add("hide");setTimeout(()=>{introScreen.style.display="none";},1000);},3000);
 
-closeAuth.addEventListener('click', ()=> authContainerBox.style.display='none');
+// --- Navigation ---
+const mainNav = document.getElementById("mainNav");
+const sectionHome = document.getElementById("section-home");
+const sectionStrategies = document.getElementById("section-strategies");
+const sectionCalendar = document.getElementById("section-calendar");
+const homeBtn = document.getElementById("homeBtn");
 
-/* TradingView mini widgets are already inserted in HTML */
+document.getElementById("tab-home").addEventListener("click",()=>{showSection("home");});
+document.getElementById("tab-strategies").addEventListener("click",()=>{showSection("strategies");});
+document.getElementById("tab-calendar").addEventListener("click",()=>{showSection("calendar");});
+homeBtn.addEventListener("click",()=>{showSection("home");});
 
-/* ========== Auth (email & Google) ========== */
-openLoginBtn.addEventListener('click', ()=> { authContainerBox.style.display = 'block' });
-
-signInBtn.addEventListener('click', async ()=>{
-  const email = authEmail.value.trim();
-  const pwd = authPassword.value;
-  if(!email || !pwd) return alert("Email et mot de passe requis");
-  try {
-    await auth.signInWithEmailAndPassword(email, pwd);
-    authContainerBox.style.display = 'none';
-  } catch(err){
-    if(err.code === 'auth/user-not-found') alert('Compte introuvable.');
-    else if(err.code === 'auth/wrong-password') alert('Mot de passe incorrect.');
-    else alert(err.message);
+function showSection(section){
+  sectionHome.style.display="none";
+  sectionStrategies.style.display="none";
+  sectionCalendar.style.display="none";
+  switch(section){
+    case "home": sectionHome.style.display="block"; break;
+    case "strategies": sectionStrategies.style.display="block"; break;
+    case "calendar": sectionCalendar.style.display="block"; break;
   }
-});
+  document.querySelectorAll("nav button").forEach(b=>b.classList.remove("active"));
+  document.getElementById("tab-"+section).classList.add("active");
+}
 
-signUpBtn.addEventListener('click', async ()=>{
-  const email = authEmail.value.trim();
-  const pwd = authPassword.value;
-  if(!email || !pwd) return alert("Email et mot de passe requis");
-  try{
-    const uc = await auth.createUserWithEmailAndPassword(email,pwd);
-    // create user doc
-    await db.collection('users').doc(uc.user.uid).set({ email, createdAt: firebase.firestore.FieldValue.serverTimestamp() }, {merge:true});
-    try{ await uc.user.sendEmailVerification(); alert('Compte créé — vérifie ton email (optionnel)'); }catch(e){ console.log('verif email failed', e) }
-    authContainerBox.style.display='none';
-  }catch(err){
-    if(err.code==='auth/email-already-in-use') alert('Cette adresse est déjà utilisée.');
-    else alert(err.message);
-  }
-});
+// --- Auth ---
+const authContainer = document.getElementById("authContainer");
+const signOutBtn = document.getElementById("signOutBtn");
+const emailWarning = document.getElementById("emailWarning");
 
-googleSignInBtn.addEventListener('click', async ()=>{
-  const provider = new firebase.auth.GoogleAuthProvider();
-  try{
-    await auth.signInWithPopup(provider);
-    authContainerBox.style.display='none';
-  }catch(err){
-    alert("Erreur connexion Google : " + err.message + "\nVérifie que ton domaine est autorisé dans Firebase Auth (Authorized domains).");
-  }
-});
-
-signOutBtnTop.addEventListener('click', ()=> auth.signOut());
-
-/* auth state */
-auth.onAuthStateChanged(async user=>{
-  currentUser = user;
+auth.onAuthStateChanged(user=>{
   if(user){
-    userBadge.textContent = user.displayName || user.email || 'Utilisateur';
-    userNameDisplay.textContent = user.displayName || user.email || '';
-    userEmailDisplay.textContent = user.email || '';
-    if(!user.emailVerified && !user.providerData.some(p=>p.providerId==='google.com')){
-      emailWarning.textContent = "Email non vérifié. Vérification recommandée.";
-      emailWarning.style.display = 'block';
-    } else emailWarning.style.display = 'none';
-
-    showPage('strategies');
-    document.getElementById('authArea').style.display = 'flex';
-    // load user data
-    await loadAllUserData();
+    if(!user.emailVerified){emailWarning.style.display="block"; auth.signOut(); return;}
+    emailWarning.style.display="none";
+    authContainer.style.display="none";
+    mainNav.style.display="flex";
+    showSection("home");
+    fetchMarkets();
+    loadUserData(user.uid);
   } else {
-    userBadge.textContent = '';
-    userNameDisplay.textContent = '';
-    userEmailDisplay.textContent = '';
-    document.getElementById('authArea').style.display = 'none';
-    showPage('landing');
+    authContainer.style.display="block";
+    mainNav.style.display="none";
+    sectionHome.style.display="none";
+    sectionStrategies.style.display="none";
+    sectionCalendar.style.display="none";
   }
 });
 
-/* ========== Strategies CRUD ========== */
-btnCreateStrategy.addEventListener('click', ()=> openStrategyModal());
-addCondBtn.addEventListener('click', ()=> { if(newCond.value.trim()){ addConditionToUI(newCond.value.trim()); newCond.value=''; } });
+document.getElementById("signInBtn").addEventListener("click",()=>{
+  const email=document.getElementById("authEmail").value;
+  const password=document.getElementById("authPassword").value;
+  auth.signInWithEmailAndPassword(email,password).catch(err=>alert(err.message));
+});
 
-function openStrategyModal(strategy=null){
-  currentStrategyEditing = strategy;
-  modalStrategy.style.display = 'flex';
-  condsContainer.innerHTML = '';
-  if(strategy){
-    document.getElementById('modalStrTitle').textContent = 'Modifier stratégie';
-    strName.value = strategy.name || '';
-    strDesc.value = strategy.desc || '';
-    (strategy.conditions || []).forEach(c => addConditionToUI(c));
-  } else {
-    document.getElementById('modalStrTitle').textContent = 'Nouvelle stratégie';
-    strName.value = ''; strDesc.value = '';
-  }
-}
-function addConditionToUI(text=''){
-  const div = document.createElement('div'); div.className = 'cond-row';
-  div.innerHTML = `<input class="cond-input" value="${text}"/><button class="ghost removeCond">Suppr</button>`;
-  condsContainer.appendChild(div);
-  div.querySelector('.removeCond').addEventListener('click', ()=> div.remove());
-}
-cancelStrategy.addEventListener('click', ()=> { modalStrategy.style.display='none'; currentStrategyEditing=null; });
-
-saveStrategy.addEventListener('click', async ()=>{
-  if(!currentUser) return alert('Connecte-toi');
-  const name = strName.value.trim(); if(!name) return alert('Nom requis');
-  const conds = Array.from(document.querySelectorAll('.cond-input')).map(i=>i.value.trim()).filter(Boolean);
-  const payload = { name, desc: strDesc.value.trim(), conditions: conds, updatedAt: firebase.firestore.FieldValue.serverTimestamp() };
+document.getElementById("signUpBtn").addEventListener("click",async()=>{
+  const email=prompt("Email:");
+  const password=prompt("Mot de passe:");
   try{
-    if(currentStrategyEditing && currentStrategyEditing.id){
-      await db.collection('users').doc(currentUser.uid).collection('strategies').doc(currentStrategyEditing.id).set(payload, {merge:true});
-    } else {
-      payload.createdAt = firebase.firestore.FieldValue.serverTimestamp();
-      const doc = await db.collection('users').doc(currentUser.uid).collection('strategies').add(payload);
-      payload.id = doc.id;
-    }
-    modalStrategy.style.display='none';
-    await loadStrategiesForUser(currentUser.uid);
-  }catch(err){ alert(err.message) }
+    const userCredential=await auth.createUserWithEmailAndPassword(email,password);
+    const user=userCredential.user;
+    await user.sendEmailVerification();
+    alert("Compte créé ! Vérifiez votre email.");
+  }catch(err){alert(err.message);}
 });
 
-async function loadStrategiesForUser(uid){
-  strategiesList.innerHTML = '';
-  strategies = {};
-  const snap = await db.collection('users').doc(uid).collection('strategies').orderBy('createdAt','desc').get();
-  snap.forEach(doc=>{
-    const s = doc.data(); s.id = doc.id;
-    strategies[s.id] = s;
-    renderStrategyCard(s);
-  });
-}
-function renderStrategyCard(s){
-  const card = document.createElement('div'); card.className='strategy-card';
-  const left = document.createElement('div');
-  left.innerHTML = `<h4>${s.name}</h4><div style="font-size:12px;color:#666">${s.desc||''}</div>`;
-  const conds = document.createElement('div'); conds.className='conditions';
-  (s.conditions||[]).forEach((c,idx)=>{
-    const row = document.createElement('div'); row.className='cond-row';
-    const cb = document.createElement('input'); cb.type='checkbox'; cb.className='cond-checkbox';
-    cb.dataset.strategy = s.id; cb.dataset.condIndex = idx;
-    const span = document.createElement('div'); span.style.flex='1'; span.textContent = c;
-    row.appendChild(cb); row.appendChild(span);
-    conds.appendChild(row);
-    cb.addEventListener('change', ()=> updateStrategyProgress(s.id));
-  });
-  left.appendChild(conds);
-  const right = document.createElement('div'); right.className='strategy-actions';
-  right.innerHTML = `<div style="width:180px">
-    <div class="progress"><i style="width:0%">0%</i></div>
-    <div style="display:flex;gap:6px;margin-top:8px">
-      <button class="ghost" data-edit="${s.id}">Modifier</button>
-      <button class="ghost" data-del="${s.id}" style="color:#c00">Suppr</button>
-    </div>
-  </div>`;
-  card.appendChild(left); card.appendChild(right);
-  strategiesList.appendChild(card);
+signOutBtn.addEventListener("click",()=>auth.signOut());
 
-  right.querySelector('[data-edit]')?.addEventListener('click', ()=> openStrategyModal(s));
-  right.querySelector('[data-del]')?.addEventListener('click', async ()=>{
-    if(!confirm('Supprimer cette stratégie ?')) return;
-    await db.collection('users').doc(currentUser.uid).collection('strategies').doc(s.id).delete();
-    await loadStrategiesForUser(currentUser.uid);
-  });
-}
-function updateStrategyProgress(id){
-  const boxes = document.querySelectorAll(`input.cond-checkbox[data-strategy="${id}"]`);
-  const total = boxes.length; if(total===0) return;
-  const checked = Array.from(boxes).filter(b=>b.checked).length;
-  const percent = Math.round(checked/total*100);
-  const card = Array.from(document.querySelectorAll('.strategy-card')).find(c=> c.querySelector(`input.cond-checkbox[data-strategy="${id}"]`));
-  if(card){
-    const progressI = card.querySelector('.progress i');
-    progressI.style.width = percent + '%';
-    progressI.textContent = percent + '%';
-  }
-}
+// --- TODO ---
+// Ajouter stratégies dynamiques, calendrier avec ajout/modif/suppression trade,
+// dépôt journalier, graphique gains/pertes, Google Sign-In après ajout domaine autorisé.
+// Gestion responsive et mise en page premium.
 
-/* ========== Journal / Calendar ========== */
-let month = new Date().getMonth();
-let year = new Date().getFullYear();
-
-function renderCalendar(m=month,y=year){
-  calendarGrid.innerHTML = '';
-  const firstDay = new Date(y,m,1).getDay();
-  const lastDate = new Date(y,m+1,0).getDate();
-  const days = ['Dim','Lun','Mar','Mer','Jeu','Ven','Sam'];
-  days.forEach(d => { const h = document.createElement('div'); h.textContent = d; h.style.fontWeight='700'; h.style.textAlign='center'; calendarGrid.appendChild(h); });
-  for(let i=0;i<firstDay;i++) calendarGrid.appendChild(document.createElement('div'));
-  let monthTotal = 0;
-  for(let d=1; d<=lastDate; d++){
-    const dateStr = `${y}-${String(m+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
-    const cell = document.createElement('div'); cell.className='cal-day card';
-    const dateLabel = document.createElement('div'); dateLabel.className='date'; dateLabel.textContent = d;
-    cell.appendChild(dateLabel);
-    const list = document.createElement('div');
-    let dayTotal = 0;
-    if(entries[dateStr]){
-      entries[dateStr].forEach(item=>{
-        const e = document.createElement('div'); e.className='cal-entry';
-        const icon = document.createElement('div'); icon.className='icon';
-        icon.innerHTML = item.type === 'achat' ? '<i class="fas fa-arrow-up" style="color:green"></i>' : (item.type === 'vente' ? '<i class="fas fa-arrow-down" style="color:red"></i>' : '<i class="fas fa-coins"></i>');
-        e.appendChild(icon);
-        const label = document.createElement('div');
-        label.innerHTML = `<strong>${item.asset}</strong> ${item.result!==undefined? (item.result>0?'+':'')+item.result : ''} ${item.type==='deposit' ? '(Dépôt: '+(item.deposit||0)+')' : ''}`;
-        e.appendChild(label);
-        const chk = document.createElement('input'); chk.type='checkbox'; chk.className='entry-select'; chk.style.marginLeft='6px';
-        chk.dataset.docId = item._docId || '';
-        chk.addEventListener('change', ()=> { if(chk.checked) selectedToDelete.add(chk.dataset.docId); else selectedToDelete.delete(chk.dataset.docId); });
-        // double click to edit
-        e.addEventListener('dblclick', ()=> openEditEntryModal(item));
-        const delWrap = document.createElement('div'); delWrap.className='del-check'; delWrap.appendChild(chk);
-        e.appendChild(delWrap);
-        list.appendChild(e);
-        if(item.result) dayTotal += Number(item.result);
-        if(item.deposit) dayTotal += Number(item.deposit);
-      });
-    }
-    const stat = document.createElement('div'); stat.className='day-stat'; stat.textContent = 'Jour net: ' + (dayTotal>=0? '+' : '') + dayTotal;
-    stat.style.padding='6px'; stat.style.borderRadius='6px'; stat.style.marginTop='8px'; stat.style.fontSize='13px';
-    stat.style.background = dayTotal>=0 ? 'var(--success)' : 'var(--danger)';
-    cell.appendChild(list); cell.appendChild(stat);
-    calendarGrid.appendChild(cell);
-    monthTotal += dayTotal;
-  }
-  currentMonthLabel.textContent = new Date(y,m).toLocaleString('fr-FR',{month:'long',year:'numeric'});
-  monthProfit.textContent = 'Profit mois: ' + (monthTotal>=0? '+' : '') + monthTotal;
-}
-
-/* load journal from Firestore */
-async function loadJournalForUser(uid){
-  entries = {};
-  const snap = await db.collection('users').doc(uid).collection('journal').orderBy('date','asc').get();
-  snap.forEach(doc=>{
-    const d = doc.data(); d._docId = doc.id;
-    if(!entries[d.date]) entries[d.date] = [];
-    entries[d.date].push(d);
-  });
-  renderCalendar();
-}
-
-/* save entry */
-saveEntry.addEventListener('click', async ()=>{
-  if(!currentUser) return alert('Connecte-toi');
-  const date = formDate.value; if(!date) return alert('Choisis une date');
-  const asset = formAsset.value; const type = formType.value;
-  const price = formPrice.value ? Number(formPrice.value) : null;
-  const result = formResult.value ? Number(formResult.value) : 0;
-  const deposit = formDeposit.value ? Number(formDeposit.value) : 0;
-  const desc = formDesc.value || '';
-  const payload = { date, asset, type, price, result, desc, deposit: (type==='deposit'?deposit: (deposit||0)), createdAt: firebase.firestore.FieldValue.serverTimestamp() };
-  try{
-    const doc = await db.collection('users').doc(currentUser.uid).collection('journal').add(payload);
-    payload._docId = doc.id;
-    if(!entries[date]) entries[date] = [];
-    entries[date].push(payload);
-    renderCalendar();
-    formPrice.value=''; formResult.value=''; formDesc.value=''; formDeposit.value='';
-    alert('Entrée ajoutée');
-  }catch(err){ alert(err.message) }
-});
-
-/* delete selected */
-deleteSelected.addEventListener('click', async ()=>{
-  if(selectedToDelete.size===0) return alert('Aucune entrée sélectionnée');
-  if(!confirm('Supprimer les éléments sélectionnés ?')) return;
-  const batch = db.batch();
-  for(const docId of selectedToDelete){
-    if(!docId) continue;
-    const ref = db.collection('users').doc(currentUser.uid).collection('journal').doc(docId);
-    batch.delete(ref);
-  }
-  await batch.commit();
-  selectedToDelete.clear();
-  await loadJournalForUser(currentUser.uid);
-  alert('Suppression effectuée');
-});
-
-/* edit entry modal */
-function openEditEntryModal(item){
-  modalEditEntry.style.display = 'flex';
-  editDate.value = item.date;
-  editAsset.value = item.asset;
-  editType.value = item.type || 'achat';
-  editPrice.value = item.price||'';
-  editResult.value = item.result||'';
-  editDeposit.value = item.deposit||'';
-  editDesc.value = item.desc||'';
-  editEntryDoc = item._docId || null;
-}
-updateEntry.addEventListener('click', async ()=>{
-  if(!editEntryDoc) return alert('Aucune entrée à modifier');
-  const payload = {
-    date: editDate.value,
-    asset: editAsset.value,
-    type: editType.value,
-    price: editPrice.value?Number(editPrice.value):null,
-    result: editResult.value?Number(editResult.value):0,
-    deposit: editDeposit.value?Number(editDeposit.value):0,
-    desc: editDesc.value
-  };
-  try{
-    await db.collection('users').doc(currentUser.uid).collection('journal').doc(editEntryDoc).set(payload, {merge:true});
-    modalEditEntry.style.display='none'; editEntryDoc = null;
-    await loadJournalForUser(currentUser.uid);
-  }catch(err){ alert(err.message) }
-});
-deleteEntryBtn.addEventListener('click', async ()=>{
-  if(!editEntryDoc) return;
-  if(!confirm('Supprimer cette entrée définitivement ?')) return;
-  await db.collection('users').doc(currentUser.uid).collection('journal').doc(editEntryDoc).delete();
-  modalEditEntry.style.display='none'; editEntryDoc = null; await loadJournalForUser(currentUser.uid);
-});
-cancelEdit.addEventListener('click', ()=> { modalEditEntry.style.display='none'; editEntryDoc=null; });
-
-/* export CSV */
-document.getElementById('exportCSV').addEventListener('click', ()=>{
-  if(!currentUser) return alert('Connecte-toi');
-  let csv = 'date,asset,type,price,result,deposit,desc\n';
-  for(const date in entries){
-    entries[date].forEach(e=>{
-      csv += `${e.date},${e.asset},${e.type},${e.price||''},${e.result||''},${e.deposit||''},"${(e.desc||'').replace(/"/g,'""')}"\n`;
-    });
-  }
-  const blob = new Blob([csv], {type:'text/csv;charset=utf-8;'});
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement('a'); a.href = url; a.download = 'journal.csv'; a.click(); URL.revokeObjectURL(url);
-});
-
-/* prev / next month nav */
-prevM.addEventListener('click', ()=> { month--; if(month<0){ month=11; year--; } renderCalendar(); });
-nextM.addEventListener('click', ()=> { month++; if(month>11){ month=0; year++; } renderCalendar(); });
-
-/* clear form */
-clearEntry.addEventListener('click', ()=> { formDate.value=''; formAsset.value='EURUSD'; formType.value='achat'; formPrice.value=''; formResult.value=''; formDesc.value=''; formDeposit.value=''; });
-
-/* load strategies + journal */
-async function loadAllUserData(){
-  if(!currentUser) return;
-  await loadStrategiesForUser(currentUser.uid);
-  await loadJournalForUser(currentUser.uid);
-}
-
-/* close modals on outside click */
-document.querySelectorAll('.modal').forEach(m=> m.addEventListener('click', (e)=> { if(e.target === m) m.style.display='none'; }));
-
-/* keyboard escape to close modals */
-document.addEventListener('keydown', (e)=> { if(e.key==='Escape') document.querySelectorAll('.modal').forEach(m=> m.style.display='none'); });
-
-/* small UI nav handlers */
-navStrategies.addEventListener('click', ()=> { showPage('strategies'); });
-navCalendar.addEventListener('click', ()=> { showPage('calendar'); });
-navLanding.addEventListener('click', ()=> { showPage('landing'); });
-
-/* initial render */
-renderCalendar();
 </script>
 </body>
 </html>
