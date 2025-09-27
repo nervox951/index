@@ -1,321 +1,381 @@
 <!DOCTYPE html>
 <html lang="fr">
 <head>
-  <meta charset="UTF-8">
-  <title>Trade Board Pro</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <style>
-    body {
-      font-family: Arial, sans-serif;
-      margin:0;
-      background:#111;
-      color:#f5f5f5;
-    }
-    header {
-      background:#0f0; /* vert néon */
-      color:#111;
-      padding:1rem;
-      text-align:center;
-      font-size:1.4rem;
-      font-weight:bold;
-    }
-    nav {
-      display:flex;
-      justify-content:space-around;
-      background:#222;
-      position:sticky;
-      top:0;
-      z-index:10;
-    }
-    nav button {
-      flex:1;
-      padding:0.7rem;
-      border:none;
-      background:#222;
-      color:#f5f5f5;
-      font-size:1rem;
-      cursor:pointer;
-    }
-    nav button.active {
-      background:#0f0;
-      color:#111;
-      font-weight:bold;
-    }
-    section {
-      display:none;
-      padding:1rem;
-    }
-    section.active { display:block; }
-    .card {
-      background:#1a1a1a;
-      padding:1rem;
-      margin:1rem 0;
-      border-radius:10px;
-      box-shadow:0 2px 6px rgba(0,0,0,0.5);
-    }
-    h2 { color:#0f0; }
-    .news-item { margin-bottom:1rem; }
-    .news-item a { color:#0f0; text-decoration:none; font-weight:bold; }
-    .muted-small { color:#aaa; font-size:0.8rem; }
-    .carousel {
-      overflow:hidden;
-      white-space:nowrap;
-      background:#000;
-      padding:0.5rem;
-      margin-bottom:1rem;
-    }
-    .carousel span {
-      display:inline-block;
-      margin-right:2rem;
-      color:#0f0;
-      font-weight:bold;
-    }
-    .calendar-grid {
-      display:grid;
-      grid-template-columns:repeat(7,1fr);
-      gap:5px;
-    }
-    .calendar-grid div {
-      border:1px solid #444;
-      min-height:80px;
-      padding:3px;
-      cursor:pointer;
-      font-size:0.9rem;
-    }
-    .today { background:#0f05; border-color:#0f0; }
-    #photoPreview img {max-width:100%; margin-top:10px; border-radius:8px;}
-  </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Trade Board Pro</title>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+<script src="https://kit.fontawesome.com/a076d05399.js" crossorigin="anonymous"></script>
+<style>
+body, html {margin:0;padding:0;font-family:'Segoe UI',sans-serif;background:#111;color:#0f0;overflow-x:hidden;}
+#introScreen{position:fixed;top:0;left:0;width:100%;height:100%;background:#111;color:#0f0;display:flex;justify-content:center;align-items:center;flex-direction:column;transition:transform 0.8s ease-out;z-index:100;cursor:pointer;}
+#introScreen.hide{transform:translateX(-100%);}
+#introScreen h1{font-size:3rem;margin:0;}
+#introScreen p{font-size:1.2rem;margin-top:1rem;text-align:center;max-width:600px;line-height:1.4;}
+header{background:#0f0;color:#111;padding:1rem;text-align:center;font-size:1.8rem;font-weight:bold;position:sticky;top:0;z-index:50;}
+nav{display:flex;justify-content:space-around;background:#222;padding:0.5rem 0;position:sticky;top:60px;z-index:40;}
+nav button{padding:0.6rem 1.2rem;border:none;border-radius:6px;font-weight:bold;cursor:pointer;transition:0.3s;background:#444;color:#fff;}
+nav button.active{background:#0f0;color:#111;}
+section{padding:1rem;}
+.strategy, .calendar-container{background:#222;margin-bottom:1rem;padding:1rem;border-radius:10px;box-shadow:0 4px 12px rgba(0,0,0,0.5);}
+.progress-bar{height:20px;background:#555;border-radius:10px;overflow:hidden;margin-top:0.5rem;}
+.progress-bar-inner{height:100%;background:#0f0;width:0%;text-align:center;color:#111;line-height:20px;font-size:0.85rem;}
+.calendar{display:grid;grid-template-columns:repeat(7,1fr);gap:1px;background:#222;border-radius:8px;overflow:hidden;}
+.calendar div{background:#333;min-height:80px;padding:0.4rem;position:relative;font-size:0.9rem;cursor:pointer;transition:0.3s;}
+.calendar div:hover{background:#444;}
+.entry{margin-top:1.2rem;font-size:0.75rem;display:flex;align-items:center;transition:0.2s;}
+.entry i{margin-right:5px;}
+.entry .gain{color:#0f0;font-weight:bold;}
+.entry .loss{color:red;font-weight:bold;}
+input,textarea,select{width:100%;padding:0.4rem;margin:0.2rem 0;border-radius:5px;border:1px solid #555;background:#222;color:#0f0;}
+button.addEntry,button.authButton{background:#0f0;color:#111;padding:0.5rem;border:none;border-radius:6px;cursor:pointer;width:100%;margin-top:0.5rem;transition:0.2s;}
+button.addEntry:hover,button.authButton:hover{background:#0b0;}
+#authContainer{max-width:400px;margin:1rem auto;background:#222;padding:1rem;border-radius:10px;box-shadow:0 4px 12px rgba(0,0,0,0.5);}
+#signOutBtn{margin-top:0.5rem;}
+#newsContainer{background:#222;padding:1rem;margin-bottom:1rem;border-radius:10px;overflow:hidden;}
+.newsItem{margin-bottom:0.5rem;}
+.newsItem a{color:#0f0;text-decoration:none;}
+.newsItem a:hover{text-decoration:underline;}
+#categoryFilter{margin-bottom:0.5rem;padding:0.3rem;border-radius:5px;border:1px solid #555;background:#222;color:#0f0;}
+#imageContainer{background:#222;padding:1rem;margin-bottom:1rem;border-radius:10px;}
+#imageContainer img{max-width:100px;margin:5px;border-radius:6px;}
+</style>
 </head>
 <body>
-<header>Trade Board Pro</header>
-<nav>
-  <button data-tab="accueil" class="active">Accueil</button>
-  <button data-tab="actualites">Actualités</button>
-  <button data-tab="strategies">Stratégies</button>
-  <button data-tab="journal">Journal</button>
-  <button data-tab="photos">Photos</button>
+
+<div id="introScreen">
+  <h1>Trade Board Pro</h1>
+  <p>Bienvenue sur votre application de suivi de stratégies et journal de trading.<br>Planifiez, suivez vos positions et analysez vos performances.<br>"Le succès en trading vient de la discipline et de l'organisation."</p>
+</div>
+
+<header id="mainHeader">Trade Board Pro</header>
+
+<div id="authContainer">
+  <h2>Connexion</h2>
+  <input type="email" id="authEmail" placeholder="Adresse e-mail">
+  <input type="password" id="authPassword" placeholder="Mot de passe">
+  <button class="authButton" id="signInBtn">Se connecter</button>
+  <button class="authButton" id="signUpBtn">Créer un compte</button>
+  <button class="authButton" id="signOutBtn" style="display:none;">Se déconnecter</button>
+  <div id="emailWarning" style="color:red;font-size:0.85rem;display:none;margin-top:0.5rem;">Email non vérifié !</div>
+</div>
+
+<nav style="display:none;" id="mainNav">
+  <button id="tab-news" class="active">Actualités</button>
+  <button id="tab-strategies">Stratégies</button>
+  <button id="tab-calendar">Calendrier</button>
+  <button id="tab-images">Images</button>
 </nav>
 
-<!-- Accueil -->
-<section id="accueil" class="active">
-  <div class="card">
-    <h2>Bienvenue</h2>
-    <p>Bienvenue sur votre application de suivi de stratégies et journal de trading.</p>
-    <p>"Le succès en trading vient de la discipline et de l'organisation."</p>
+<section id="section-news" style="display:none;">
+  <h2>Actualités financières</h2>
+  <select id="categoryFilter">
+    <option value="general">Tout</option>
+    <option value="forex">Forex</option>
+    <option value="crypto">Crypto</option>
+    <option value="bourse">Bourse</option>
+    <option value="gold">Gold</option>
+  </select>
+  <div id="newsContainer"></div>
+  <iframe src="https://www.investing.com/economic-calendar/" style="width:100%;height:500px;border:none;border-radius:10px;margin-top:1rem;"></iframe>
+</section>
+
+<section id="section-strategies" style="display:none;">
+  <h2>Mes stratégies</h2>
+  <div id="strategiesContainer"></div>
+  <button class="authButton" id="addStrategyBtn">Ajouter une stratégie</button>
+</section>
+
+<section id="section-calendar" style="display:none;">
+  <h2>Calendrier & Journal</h2>
+  <div style="display:flex;justify-content:space-between;margin-bottom:0.5rem;">
+    <button id="prevMonth">&lt; Mois précédent</button>
+    <span id="currentMonth" style="font-weight:bold;"></span>
+    <button id="nextMonth">Mois suivant &gt;</button>
   </div>
-  <div class="card">
-    <h2>Widgets Marchés</h2>
-    <!-- Carrousel -->
-    <div class="carousel" id="marketCarousel"></div>
-    <!-- TradingView Ticker -->
-    <div class="tradingview-widget-container">
-      <div id="tradingview_ticker"></div>
-      <script type="text/javascript" src="https://s3.tradingview.com/external-embedding/embed-widget-ticker-tape.js" async>
-      {
-        "symbols": [
-          {"proName":"FOREXCOM:XAUUSD","title":"Gold"},
-          {"proName":"CAPITALCOM:US500","title":"S&P 500"},
-          {"proName":"NASDAQ:NDX","title":"Nasdaq 100"},
-          {"proName":"BITSTAMP:BTCUSD","title":"Bitcoin"},
-          {"proName":"TVC:DXY","title":"US Dollar Index"}
-        ],
-        "colorTheme":"dark",
-        "isTransparent":false,
-        "displayMode":"adaptive",
-        "locale":"fr"
-      }
-      </script>
-    </div>
-  </div>
-  <div class="card">
-    <h2>Calendrier économique</h2>
-    <iframe src="https://sslecal2.investing.com?ecoDayBackground=%23111&defaultFont=Arial&innerBorderColor=%230f0&borderColor=%230f0&columns=exc_flags,date,time,event,actual,forecast,previous&countries=5,72,22,17,39,43,55,4,26,10,12,6,37,97,72&importance=1,2,3&calType=day&timeZone=48&lang=12" width="100%" height="500" frameborder="0" allowtransparency="true"></iframe>
+  <div class="calendar" id="calendar"></div>
+  <div id="entryForm" style="margin-top:1rem;">
+    <input type="date" id="entryDate">
+    <select id="entryAsset">
+      <option value="EURUSD">EUR/USD</option>
+      <option value="XAUUSD">XAU/USD (Gold)</option>
+      <option value="USDX">US Dollar Index</option>
+      <option value="BTCUSD">BTC/USD</option>
+      <option value="ETHUSD">ETH/USD</option>
+      <option value="DJ30">DJ30</option>
+      <option value="NAS100">NAS100</option>
+      <option value="AUTRE">Ajouter un actif...</option>
+    </select>
+    <select id="entryType"><option value="achat">Achat</option><option value="vente">Vente</option></select>
+    <input type="number" id="entryPrice" placeholder="Prix">
+    <input type="number" id="entryResult" placeholder="Résultat (gain/perte)">
+    <textarea id="entryDescription" placeholder="Description"></textarea>
+    <button class="addEntry">Ajouter l'entrée</button>
   </div>
 </section>
 
-<!-- Actualités -->
-<section id="actualites">
-  <div class="card">
-    <h2>Actualités financières</h2>
-    <label>Langue :
-      <select id="newsLang">
-        <option value="en">Anglais</option>
-        <option value="fr">Français</option>
-      </select>
-    </label>
-    <label>Catégorie :
-      <select id="newsCategory">
-        <option value="general">Général</option>
-        <option value="forex">Forex</option>
-        <option value="crypto">Crypto</option>
-        <option value="bourse">Bourse</option>
-        <option value="gold">Gold</option>
-      </select>
-    </label>
-    <div id="newsLoading" class="muted-small"></div>
-    <div id="newsList"></div>
-  </div>
-</section>
-
-<!-- Stratégies -->
-<section id="strategies">
-  <div class="card">
-    <h2>Stratégies</h2>
-    <button onclick="addStrategy()">Ajouter une stratégie</button>
-    <div id="strategyList"></div>
-  </div>
-</section>
-
-<!-- Journal -->
-<section id="journal">
-  <div class="card">
-    <h2>Journal de Trading</h2>
-    <div id="calendarHeader">
-      <button onclick="prevMonth()">&lt;</button>
-      <span id="monthYear"></span>
-      <button onclick="nextMonth()">&gt;</button>
-    </div>
-    <div class="calendar-grid" id="calendar"></div>
-  </div>
-</section>
-
-<!-- Photos -->
-<section id="photos">
-  <div class="card">
-    <h2>Mes Photos</h2>
-    <input type="file" id="photoInput" accept="image/*">
-    <button onclick="addPhoto()">Ajouter</button>
-    <div id="photoPreview"></div>
-  </div>
+<section id="section-images" style="display:none;">
+  <h2>Images par jour</h2>
+  <input type="file" id="imageInput" multiple>
+  <button class="authButton" id="addImageBtn">Ajouter image</button>
+  <div id="imageContainer"></div>
 </section>
 
 <script>
-// ====== Navigation ======
-const tabs=document.querySelectorAll("nav button");
-tabs.forEach(btn=>{
-  btn.addEventListener("click",()=>{
-    tabs.forEach(b=>b.classList.remove("active"));
-    btn.classList.add("active");
-    document.querySelectorAll("section").forEach(sec=>sec.classList.remove("active"));
-    document.getElementById(btn.dataset.tab).classList.add("active");
-  });
+// --- Firebase config ---
+const firebaseConfig = {
+  apiKey: "AIzaSyBPcsf4ONjbYUcNTlAj6CEmsaTfISVdGA8",
+  authDomain: "perso-journaling.firebaseapp.com",
+  projectId: "perso-journaling",
+  storageBucket: "perso-journaling.appspot.com",
+  messagingSenderId: "660360215177",
+  appId: "1:660360215177:web:WEBAPPID_A_REMPLACER"
+};
+firebase.initializeApp(firebaseConfig);
+const auth = firebase.auth();
+const db = firebase.firestore();
+
+// --- Intro ---
+const introScreen = document.getElementById("introScreen");
+function hideIntro(){introScreen.classList.add("hide"); setTimeout(()=>{introScreen.style.display="none";},800);}
+introScreen.addEventListener("click",hideIntro);
+setTimeout(hideIntro,3000);
+
+// --- Menu onglets ---
+const mainNav = document.getElementById("mainNav");
+const sections = {
+  news: document.getElementById("section-news"),
+  strategies: document.getElementById("section-strategies"),
+  calendar: document.getElementById("section-calendar"),
+  images: document.getElementById("section-images")
+};
+document.getElementById("tab-news").addEventListener("click",()=>showSection("news"));
+document.getElementById("tab-strategies").addEventListener("click",()=>showSection("strategies"));
+document.getElementById("tab-calendar").addEventListener("click",()=>showSection("calendar"));
+document.getElementById("tab-images").addEventListener("click",()=>showSection("images"));
+function showSection(name){
+  for(const sec in sections){sections[sec].style.display="none";document.getElementById("tab-"+sec).classList.remove("active");}
+  sections[name].style.display="block";
+  document.getElementById("tab-"+name).classList.add("active");
+}
+
+// --- Auth ---
+const authContainer = document.getElementById("authContainer");
+const signOutBtn = document.getElementById("signOutBtn");
+const emailWarning = document.getElementById("emailWarning");
+
+auth.onAuthStateChanged(user=>{
+  if(user){
+    if(!user.emailVerified){emailWarning.style.display="block"; auth.signOut(); return;}
+    emailWarning.style.display="none";
+    authContainer.style.display="none";
+    mainNav.style.display="flex";
+    showSection("news");
+    signOutBtn.style.display="block";
+    loadUserData(user.uid);
+    loadUserImages(user.uid);
+    fetchNews("general","fr");
+  } else {
+    authContainer.style.display="block";
+    mainNav.style.display="none";
+    signOutBtn.style.display="none";
+    for(const sec in sections){sections[sec].style.display="none";}
+  }
 });
 
-// ====== Carrousel Marchés ======
-const marketCarousel=document.getElementById("marketCarousel");
-const markets=["Gold monte","USD baisse","BTC en hausse","Nasdaq stable","S&P500 recule"];
-let idx=0;
-setInterval(()=>{
-  marketCarousel.innerHTML="<span>"+markets[idx]+"</span>";
-  idx=(idx+1)%markets.length;
-},3000);
-
-// ====== Actualités ======
-const FINNHUB_KEY="d3ber21r01qqg7bua73gd3ber21r01qqg7bua740";
-const NEWSAPI_KEY="c273752849e34937bf79a8bba0917602";
-const newsListEl=document.getElementById("newsList");
-const newsLoading=document.getElementById("newsLoading");
-const newsCategory=document.getElementById("newsCategory");
-const newsLang=document.getElementById("newsLang");
-
-function prettyDateFromUnix(unixSec){
-  const d=new Date(unixSec*1000);
-  const now=new Date();
-  let label="";
-  if(d.toDateString()===now.toDateString()) label="Aujourd'hui";
-  else if(d.toDateString()===new Date(now.getTime()-86400000).toDateString()) label="Hier";
-  else if(d.toDateString()===new Date(now.getTime()+86400000).toDateString()) label="Demain";
-  else label=d.toLocaleDateString("fr-FR");
-  return `${label} ${d.toLocaleTimeString("fr-FR",{hour:"2-digit",minute:"2-digit"})}`;
-}
-function escapeHtml(str){return str.replace(/[&<>'"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;","'":"&#39;",'"':"&quot;"}[c]));}
-
-async function fetchNews(category="general",lang="en"){
-  newsLoading.textContent="Chargement...";
-  newsListEl.innerHTML="";
+document.getElementById("signInBtn").addEventListener("click",()=>{
+  const email=document.getElementById("authEmail").value;
+  const password=document.getElementById("authPassword").value;
+  auth.signInWithEmailAndPassword(email,password).catch(err=>alert(err.message));
+});
+document.getElementById("signUpBtn").addEventListener("click",async()=>{
+  const email=prompt("Email:");
+  const password=prompt("Mot de passe:");
   try{
-    let url;
-    if(lang==="fr"){
-      url=`https://newsapi.org/v2/top-headlines?country=fr&category=${encodeURIComponent(category)}&apiKey=${NEWSAPI_KEY}`;
-    }else{
-      url=`https://finnhub.io/api/v1/news?category=${encodeURIComponent(category)}&token=${FINNHUB_KEY}`;
-    }
-    const r=await fetch(url);
-    if(!r.ok) throw new Error("HTTP "+r.status);
-    const data=await r.json();
-    let list=[];
-    if(lang==="fr"){ list=data.articles||[]; }
-    else { list=(Array.isArray(data)?data:[]).slice(0,12); }
-    if(list.length===0){ newsListEl.innerHTML="<div class='muted-small'>Aucune actualité.</div>"; return; }
-    list.forEach(item=>{
-      let title,urlArticle,timestamp,sourceName;
-      if(lang==="fr"){
-        title=item.title; urlArticle=item.url; timestamp=new Date(item.publishedAt).getTime()/1000; sourceName=item.source.name;
-      }else{
-        title=item.headline; urlArticle=item.url; timestamp=item.datetime; sourceName=item.source;
-      }
-      const div=document.createElement("div");
-      div.className="news-item";
-      const timeLabel=timestamp?prettyDateFromUnix(timestamp):"";
-      div.innerHTML=`<a href="${urlArticle}" target="_blank">${escapeHtml(title)}</a><p>${timeLabel} • <span class="muted-small">${escapeHtml(sourceName||"")}</span></p>`;
-      newsListEl.appendChild(div);
-    });
-  }catch(e){newsListEl.innerHTML="<div class='muted-small'>Erreur chargement actus</div>";}
-  finally{newsLoading.textContent="";}
-}
-newsCategory.addEventListener("change",()=>fetchNews(newsCategory.value,newsLang.value));
-newsLang.addEventListener("change",()=>fetchNews(newsCategory.value,newsLang.value));
-fetchNews(newsCategory.value,newsLang.value);
+    const userCredential=await auth.createUserWithEmailAndPassword(email,password);
+    const user=userCredential.user;
+    await user.sendEmailVerification();
+    alert("Compte créé ! Vérifiez votre email.");
+  }catch(err){alert(err.message);}
+});
+signOutBtn.addEventListener("click",()=>auth.signOut());
 
-// ====== Stratégies ======
-let strategyId=0;
-function addStrategy(){
+// --- Strategies ---
+const strategiesContainer=document.getElementById("strategiesContainer");
+document.getElementById("addStrategyBtn").addEventListener("click",()=>{
   const div=document.createElement("div");
-  div.className="card";
-  div.innerHTML=`<input placeholder="Nom stratégie"><textarea placeholder="Conditions"></textarea><button onclick="this.parentNode.remove()">Supprimer</button>`;
-  document.getElementById("strategyList").appendChild(div);
-}
+  div.className="strategy";
+  div.innerHTML=`<strong>Nouvelle stratégie</strong><div>
+    <label><input type="checkbox" class="condition"> Condition 1</label><br>
+    <label><input type="checkbox" class="condition"> Condition 2</label><br>
+    <label><input type="checkbox" class="condition"> Condition 3</label><br>
+    <div class="progress-bar"><div class="progress-bar-inner">0%</div></div>
+    <button class="enterPosition" disabled>Entrer en position</button>
+  </div>`;
+  strategiesContainer.appendChild(div);
+  const conditions=div.querySelectorAll(".condition");
+  const progressBar=div.querySelector(".progress-bar-inner");
+  const enterBtn=div.querySelector(".enterPosition");
+  conditions.forEach(cond=>cond.addEventListener("change",()=>{
+    const total=conditions.length;
+    const checked=div.querySelectorAll(".condition:checked").length;
+    const percent=Math.round((checked/total)*100);
+    progressBar.style.width=percent+"%";
+    progressBar.textContent=percent+"%";
+    enterBtn.disabled=checked!==total;
+  }));
+});
 
-// ====== Journal ======
-const monthYear=document.getElementById("monthYear");
+// --- Calendrier et journal ---
 const calendarEl=document.getElementById("calendar");
-let today=new Date();let currentMonth=today.getMonth();let currentYear=today.getFullYear();
+const prevMonthBtn=document.getElementById("prevMonth");
+const nextMonthBtn=document.getElementById("nextMonth");
+const currentMonthLabel=document.getElementById("currentMonth");
+const entryDateInput=document.getElementById("entryDate");
+const entryAssetInput=document.getElementById("entryAsset");
+const entryTypeInput=document.getElementById("entryType");
+const entryPriceInput=document.getElementById("entryPrice");
+const entryResultInput=document.getElementById("entryResult");
+const entryDescriptionInput=document.getElementById("entryDescription");
 let entries={};
-function renderCalendar(){
-  const firstDay=new Date(currentYear,currentMonth).getDay();
-  const daysInMonth=new Date(currentYear,currentMonth+1,0).getDate();
-  monthYear.textContent=new Date(currentYear,currentMonth).toLocaleString("fr-FR",{month:"long",year:"numeric"});
+let today=new Date();
+let currentMonth=today.getMonth();
+let currentYear=today.getFullYear();
+
+function renderCalendar(month=currentMonth,year=currentYear){
   calendarEl.innerHTML="";
-  for(let i=0;i<firstDay;i++){calendarEl.appendChild(document.createElement("div"));}
-  for(let d=1;d<=daysInMonth;d++){
+  const firstDay=new Date(year,month,1).getDay();
+  const lastDate=new Date(year,month+1,0).getDate();
+  const daysInWeek=["Dim","Lun","Mar","Mer","Jeu","Ven","Sam"];
+  daysInWeek.forEach(d=>{const div=document.createElement("div"); div.style.fontWeight="bold"; div.style.background="#555"; div.textContent=d; calendarEl.appendChild(div);});
+  for(let i=0;i<firstDay;i++) calendarEl.appendChild(document.createElement("div"));
+  for(let d=1;d<=lastDate;d++){
     const div=document.createElement("div");
-    const dateStr=`${currentYear}-${currentMonth+1}-${d}`;
+    const dateStr=`${year}-${String(month+1).padStart(2,"0")}-${String(d).padStart(2,"0")}`;
     div.textContent=d;
-    if(new Date().toDateString()===new Date(currentYear,currentMonth,d).toDateString()) div.classList.add("today");
+    if(entries[dateStr]){
+      let total=0;
+      entries[dateStr].forEach(en=>{
+        const eDiv=document.createElement("div");
+        eDiv.className="entry";
+        const icon = en.type==="achat"?"fa-arrow-up":"fa-arrow-down";
+        eDiv.innerHTML=`<i class="fas ${icon}"></i>${en.asset} ${en.result>0?'<span class="gain">+'+en.result+'</span>':'<span class="loss">'+en.result+'</span>'}`;
+        total+=en.result;
+        div.appendChild(eDiv);
+      });
+      div.style.background=total>=0?"#1a5":"#a15";
+    }
     div.addEventListener("dblclick",()=>{
-      const note=prompt("Entrée journal pour "+dateStr,entries[dateStr]||"");
-      if(note){entries[dateStr]=note;}
+      entryDateInput.value=dateStr;
+      if(entries[dateStr] && entries[dateStr][0]){
+        const firstEntry=entries[dateStr][0];
+        entryAssetInput.value=firstEntry.asset;
+        entryTypeInput.value=firstEntry.type;
+        entryPriceInput.value=firstEntry.price;
+        entryResultInput.value=firstEntry.result;
+        entryDescriptionInput.value=firstEntry.desc;
+      }
+      showSection("calendar");
+      entryDateInput.focus();
     });
     calendarEl.appendChild(div);
   }
+  currentMonthLabel.textContent=new Date(year,month).toLocaleString('fr-FR',{month:'long',year:'numeric'});
 }
-function prevMonth(){currentMonth--;if(currentMonth<0){currentMonth=11;currentYear--;}renderCalendar();}
-function nextMonth(){currentMonth++;if(currentMonth>11){currentMonth=0;currentYear++;}renderCalendar();}
+prevMonthBtn.addEventListener("click",()=>{currentMonth--; if(currentMonth<0){currentMonth=11; currentYear--;} renderCalendar();});
+nextMonthBtn.addEventListener("click",()=>{currentMonth++; if(currentMonth>11){currentMonth=0; currentYear++;} renderCalendar();});
+
+document.querySelector(".addEntry").addEventListener("click",async()=>{
+  const user=auth.currentUser;
+  if(!user){alert("Connecte-toi !"); return;}
+  const date=entryDateInput.value;
+  if(!date){alert("Choisis une date !"); return;}
+  const asset=entryAssetInput.value;
+  const type=entryTypeInput.value;
+  const price=parseFloat(entryPriceInput.value);
+  const result=parseFloat(entryResultInput.value);
+  const desc=entryDescriptionInput.value;
+  if(!entries[date]) entries[date]=[];
+  entries[date].push({asset,type,price,result,desc});
+  renderCalendar();
+  await db.collection("users").doc(user.uid).collection("journal").add({date,asset,type,price,result,desc,userId:user.uid});
+  entryAssetInput.value=""; entryPriceInput.value=""; entryResultInput.value=""; entryDescriptionInput.value="";
+});
+
+async function loadUserData(uid){
+  entries={};
+  const snapshot=await db.collection("users").doc(uid).collection("journal").get();
+  snapshot.forEach(doc=>{
+    const data=doc.data();
+    if(!entries[data.date]) entries[data.date]=[];
+    entries[data.date].push({asset:data.asset,type:data.type,price:data.price,result:data.result,desc:data.desc});
+  });
+  renderCalendar();
+}
+
 renderCalendar();
 
-// ====== Photos ======
-const photoInput=document.getElementById("photoInput");
-const photoPreview=document.getElementById("photoPreview");
-function addPhoto(){
-  const file=photoInput.files[0];
-  if(!file) return;
-  const reader=new FileReader();
-  reader.onload=e=>{
-    const img=document.createElement("img");
-    img.src=e.target.result;
-    photoPreview.appendChild(img);
-  };
-  reader.readAsDataURL(file);
+// --- Gestion images ---
+const imageInput=document.getElementById("imageInput");
+const imageContainer=document.getElementById("imageContainer");
+document.getElementById("addImageBtn").addEventListener("click",async()=>{
+  const user=auth.currentUser;
+  if(!user){alert("Connecte-toi !"); return;}
+  const files=imageInput.files;
+  for(const file of files){
+    const reader=new FileReader();
+    reader.onload=function(e){
+      const img=document.createElement("img");
+      img.src=e.target.result;
+      imageContainer.appendChild(img);
+      db.collection("users").doc(user.uid).collection("images").add({src:e.target.result,date:new Date().toISOString()});
+    };
+    reader.readAsDataURL(file);
+  }
+});
+
+// --- Actualités dynamiques NewsAPI + filtre ---
+const NEWSAPI_KEY="c273752849e34937bf79a8bba0917602";
+const newsContainer=document.getElementById("newsContainer");
+const categoryFilter=document.getElementById("categoryFilter");
+categoryFilter.addEventListener("change",()=>fetchNews(categoryFilter.value,"fr"));
+
+async function fetchNews(category="general",lang="fr"){
+  newsContainer.innerHTML="Chargement...";
+  let url="";
+  if(lang==="fr"){
+    let newsapiCat = "general";
+    if(["forex","crypto","bourse","gold"].includes(category)) {newsapiCat = "business";}
+    url=`https://newsapi.org/v2/top-headlines?country=fr&category=${newsapiCat}&apiKey=${NEWSAPI_KEY}`;
+  } else {
+    url=`https://finnhub.io/api/v1/news?category=${category}&token=c273752849e34937bf79a8bba0917602`;
+  }
+  try{
+    const res=await fetch(url);
+    const data=await res.json();
+    newsContainer.innerHTML="";
+    let articles = lang==="fr"?data.articles:data;
+    articles.slice(0,20).forEach(n=>{
+      const div=document.createElement("div");
+      div.className="newsItem";
+      let title = n.title;
+      let link = lang==="fr"?n.url:n.url;
+      // date formatting
+      let dateStr = lang==="fr"?(n.publishedAt||n.datetime||""):(n.datetime||"");
+      let d = new Date(dateStr);
+      let todayD = new Date();
+      let diff = Math.floor((todayD-d)/(1000*60*60*24));
+      let displayDate="";
+      if(diff===0) displayDate="Aujourd'hui "+d.getHours()+":"+String(d.getMinutes()).padStart(2,"0");
+      else if(diff===1) displayDate="Hier "+d.getHours()+":"+String(d.getMinutes()).padStart(2,"0");
+      else if(diff===-1) displayDate="Demain "+d.getHours()+":"+String(d.getMinutes()).padStart(2,"0");
+      else displayDate=d.toLocaleDateString()+" "+d.getHours()+":"+String(d.getMinutes()).padStart(2,"0");
+      div.innerHTML=`<a href="${link}" target="_blank">${title} (${displayDate})</a>`;
+      newsContainer.appendChild(div);
+    });
+  }catch(e){newsContainer.innerHTML="Erreur chargement actus";}
 }
 </script>
 </body>
