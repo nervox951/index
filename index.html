@@ -1,682 +1,322 @@
 <!DOCTYPE html>
 <html lang="fr">
 <head>
-<meta charset="utf-8" />
-<meta name="viewport" content="width=device-width,initial-scale=1" />
-<title>Trade Board Pro</title>
-
-<!-- Firebase compat SDKs -->
-<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
-
-<!-- icons -->
-<script src="https://kit.fontawesome.com/a076d05399.js" crossorigin="anonymous"></script>
-
-<style>
-  :root{
-    --bg:#0f0f10;
-    --panel:#161616;
-    --accent:#00ff66;
-    --muted:#9aa0a6;
-    --danger:#ff6464;
-  }
-  *{box-sizing:border-box}
-  body,html{margin:0;padding:0;height:100%;font-family:Inter, "Segoe UI", Roboto, Arial;background:var(--bg);color:#e6ffe9}
-  header{background:var(--accent);color:#022;padding:14px 18px;text-align:center;font-weight:800;font-size:1.25rem;position:sticky;top:0;z-index:40}
-  #splash{position:fixed;inset:0;background:#000;color:var(--accent);display:flex;flex-direction:column;align-items:center;justify-content:center;z-index:9999;transition:transform .6s ease}
-  #splash.hide{transform:translateX(-110%)}
-  nav{display:flex;gap:8px;justify-content:center;padding:10px;background:#111;position:sticky;top:64px;z-index:30}
-  nav button{background:#1c1c1c;border:none;color:#ddd;padding:10px 14px;border-radius:10px;cursor:pointer;font-weight:600}
-  nav button.active{background:var(--accent);color:#022}
-  main{padding:18px;max-width:1100px;margin:0 auto}
-  section{display:none}
-  section.active{display:block}
-  .panel{background:var(--panel);padding:16px;border-radius:12px;box-shadow:0 6px 18px rgba(0,0,0,.5);margin-bottom:16px}
-  .muted{color:var(--muted);font-size:.95rem}
-  /* News */
-  .news-list{display:flex;flex-direction:column;gap:10px}
-  .news-item{padding:10px;border-radius:8px;background:#0b0b0b}
-  .news-item a{color:var(--accent);font-weight:700;text-decoration:none}
-  .news-item p{margin:6px 0 0;color:var(--muted);font-size:.9rem}
-  /* strategy list */
-  .strategy{padding:10px;background:#0b0b0b;border-radius:8px;margin-bottom:10px;display:flex;gap:8px;align-items:flex-start}
-  .strategy .conds{flex:1}
-  .progress{height:18px;background:#111;border-radius:10px;overflow:hidden;margin-top:8px}
-  .progress .bar{height:100%;background:var(--accent);width:0;text-align:center;color:#022;font-weight:700}
-  /* calendar grid */
-  .calendar-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:6px}
-  .calendar-cell{background:#0b0b0b;padding:8px;border-radius:8px;min-height:88px;cursor:pointer;position:relative}
-  .calendar-cell .date-label{position:absolute;top:6px;right:8px;color:var(--muted);font-size:.8rem}
-  .entry{display:flex;align-items:center;gap:8px;margin-top:36px;font-size:.85rem}
-  .entry .amt{font-weight:700}
-  .green{color:#98ffb2}
-  .red{color:#ffb2b2}
-  /* image gallery */
-  .gallery img{max-width:120px;border-radius:8px;margin:6px}
-  /* small controls */
-  .row{display:flex;gap:8px;align-items:center}
-  input,select,textarea,button{font-family:inherit}
-  input,select,textarea{background:#0c0c0c;border:1px solid #202020;padding:8px;border-radius:8px;color:#eafff0}
-  button.primary{background:var(--accent);color:#022;border:none;padding:10px 12px;border-radius:8px;cursor:pointer}
-  .muted-small{color:var(--muted);font-size:.85rem}
-  .danger{background:var(--danger);color:#111;border:none;padding:8px;border-radius:8px;cursor:pointer}
-  @media (max-width:700px){
-    nav{flex-wrap:wrap}
-    .calendar-grid{grid-template-columns:repeat(7,1fr);font-size:.8rem}
-  }
-</style>
+  <meta charset="UTF-8">
+  <title>Trade Board Pro</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin:0;
+      background:#111;
+      color:#f5f5f5;
+    }
+    header {
+      background:#0f0; /* vert néon */
+      color:#111;
+      padding:1rem;
+      text-align:center;
+      font-size:1.4rem;
+      font-weight:bold;
+    }
+    nav {
+      display:flex;
+      justify-content:space-around;
+      background:#222;
+      position:sticky;
+      top:0;
+      z-index:10;
+    }
+    nav button {
+      flex:1;
+      padding:0.7rem;
+      border:none;
+      background:#222;
+      color:#f5f5f5;
+      font-size:1rem;
+      cursor:pointer;
+    }
+    nav button.active {
+      background:#0f0;
+      color:#111;
+      font-weight:bold;
+    }
+    section {
+      display:none;
+      padding:1rem;
+    }
+    section.active { display:block; }
+    .card {
+      background:#1a1a1a;
+      padding:1rem;
+      margin:1rem 0;
+      border-radius:10px;
+      box-shadow:0 2px 6px rgba(0,0,0,0.5);
+    }
+    h2 { color:#0f0; }
+    .news-item { margin-bottom:1rem; }
+    .news-item a { color:#0f0; text-decoration:none; font-weight:bold; }
+    .muted-small { color:#aaa; font-size:0.8rem; }
+    .carousel {
+      overflow:hidden;
+      white-space:nowrap;
+      background:#000;
+      padding:0.5rem;
+      margin-bottom:1rem;
+    }
+    .carousel span {
+      display:inline-block;
+      margin-right:2rem;
+      color:#0f0;
+      font-weight:bold;
+    }
+    .calendar-grid {
+      display:grid;
+      grid-template-columns:repeat(7,1fr);
+      gap:5px;
+    }
+    .calendar-grid div {
+      border:1px solid #444;
+      min-height:80px;
+      padding:3px;
+      cursor:pointer;
+      font-size:0.9rem;
+    }
+    .today { background:#0f05; border-color:#0f0; }
+    #photoPreview img {max-width:100%; margin-top:10px; border-radius:8px;}
+  </style>
 </head>
 <body>
-
-<!-- Splash -->
-<div id="splash">
-  <h1 style="font-size:2.4rem;margin:0">Trade Board Pro</h1>
-  <p style="max-width:680px;text-align:center;margin-top:8px;font-size:1.05rem">
-    Bienvenue — planifie, suis tes stratégies et ton journal. Discipline + organisation = progrès.
-  </p>
-  <p class="muted-small" style="margin-top:10px">Clique pour fermer ou ça ferme automatiquement après 3s</p>
-</div>
-
 <header>Trade Board Pro</header>
-
 <nav>
-  <button data-tab="dashboard" class="active">Accueil</button>
-  <button data-tab="news">Actualités</button>
+  <button data-tab="accueil" class="active">Accueil</button>
+  <button data-tab="actualites">Actualités</button>
   <button data-tab="strategies">Stratégies</button>
-  <button data-tab="calendar">Calendrier</button>
-  <button data-tab="images">Images</button>
-  <button id="signOutBtn" style="margin-left:12px;display:none" class="primary">Se déconnecter</button>
+  <button data-tab="journal">Journal</button>
+  <button data-tab="photos">Photos</button>
 </nav>
 
-<main>
-  <!-- AUTH PANEL -->
-  <div id="authPanel" class="panel" style="max-width:520px;margin:0 auto 18px;">
-    <h3>Connexion / Inscription</h3>
-    <div class="row" style="margin-top:8px">
-      <input id="authEmail" type="email" placeholder="email" style="flex:1">
-      <input id="authPassword" type="password" placeholder="mot de passe" style="flex:1">
-    </div>
-    <div style="display:flex;gap:8px;margin-top:10px">
-      <button id="btnSignIn" class="primary">Se connecter</button>
-      <button id="btnSignUp" style="background:#444;color:#fff;border:none;padding:8px;border-radius:8px">Créer compte</button>
-    </div>
-    <p id="authMsg" class="muted-small" style="margin-top:8px"></p>
+<!-- Accueil -->
+<section id="accueil" class="active">
+  <div class="card">
+    <h2>Bienvenue</h2>
+    <p>Bienvenue sur votre application de suivi de stratégies et journal de trading.</p>
+    <p>"Le succès en trading vient de la discipline et de l'organisation."</p>
   </div>
-
-  <!-- Dashboard -->
-  <section id="dashboard" class="active">
-    <div class="panel">
-      <h2>Tableau de bord</h2>
-      <p class="muted">Flux marché rapide + calendrier économique</p>
-
-      <!-- TradingView ticker (light integration) -->
-      <div style="margin-top:12px" id="tv-ticker"></div>
-
-      <!-- Investing.com economic calendar iframe -->
-      <div style="margin-top:14px">
-        <iframe src="https://www.investing.com/economic-calendar/" style="width:100%;height:360px;border:0;border-radius:10px;"></iframe>
-      </div>
+  <div class="card">
+    <h2>Widgets Marchés</h2>
+    <!-- Carrousel -->
+    <div class="carousel" id="marketCarousel"></div>
+    <!-- TradingView Ticker -->
+    <div class="tradingview-widget-container">
+      <div id="tradingview_ticker"></div>
+      <script type="text/javascript" src="https://s3.tradingview.com/external-embedding/embed-widget-ticker-tape.js" async>
+      {
+        "symbols": [
+          {"proName":"FOREXCOM:XAUUSD","title":"Gold"},
+          {"proName":"CAPITALCOM:US500","title":"S&P 500"},
+          {"proName":"NASDAQ:NDX","title":"Nasdaq 100"},
+          {"proName":"BITSTAMP:BTCUSD","title":"Bitcoin"},
+          {"proName":"TVC:DXY","title":"US Dollar Index"}
+        ],
+        "colorTheme":"dark",
+        "isTransparent":false,
+        "displayMode":"adaptive",
+        "locale":"fr"
+      }
+      </script>
     </div>
-  </section>
+  </div>
+  <div class="card">
+    <h2>Calendrier économique</h2>
+    <iframe src="https://sslecal2.investing.com?ecoDayBackground=%23111&defaultFont=Arial&innerBorderColor=%230f0&borderColor=%230f0&columns=exc_flags,date,time,event,actual,forecast,previous&countries=5,72,22,17,39,43,55,4,26,10,12,6,37,97,72&importance=1,2,3&calType=day&timeZone=48&lang=12" width="100%" height="500" frameborder="0" allowtransparency="true"></iframe>
+  </div>
+</section>
 
-  <!-- News -->
-  <section id="news">
-    <div class="panel">
-      <div style="display:flex;align-items:center;justify-content:space-between">
-        <div><h2>Actualités financières</h2><div class="muted-small">Sources Finnhub</div></div>
-        <div class="row">
-          <label for="newsCategory" class="muted-small" style="margin-right:8px">Catégorie</label>
-          <select id="newsCategory">
-            <option value="general">Toutes</option>
-            <option value="forex">Forex</option>
-            <option value="crypto">Crypto</option>
-            <option value="merger">Bourse</option>
-            <option value="commodities">Gold</option>
-          </select>
-        </div>
-      </div>
+<!-- Actualités -->
+<section id="actualites">
+  <div class="card">
+    <h2>Actualités financières</h2>
+    <label>Langue :
+      <select id="newsLang">
+        <option value="en">Anglais</option>
+        <option value="fr">Français</option>
+      </select>
+    </label>
+    <label>Catégorie :
+      <select id="newsCategory">
+        <option value="general">Général</option>
+        <option value="forex">Forex</option>
+        <option value="crypto">Crypto</option>
+        <option value="bourse">Bourse</option>
+        <option value="gold">Gold</option>
+      </select>
+    </label>
+    <div id="newsLoading" class="muted-small"></div>
+    <div id="newsList"></div>
+  </div>
+</section>
 
-      <div id="newsLoading" class="muted-small" style="margin-top:10px">Chargement des actus…</div>
-      <div id="newsList" class="news-list" style="margin-top:12px"></div>
+<!-- Stratégies -->
+<section id="strategies">
+  <div class="card">
+    <h2>Stratégies</h2>
+    <button onclick="addStrategy()">Ajouter une stratégie</button>
+    <div id="strategyList"></div>
+  </div>
+</section>
+
+<!-- Journal -->
+<section id="journal">
+  <div class="card">
+    <h2>Journal de Trading</h2>
+    <div id="calendarHeader">
+      <button onclick="prevMonth()">&lt;</button>
+      <span id="monthYear"></span>
+      <button onclick="nextMonth()">&gt;</button>
     </div>
-  </section>
+    <div class="calendar-grid" id="calendar"></div>
+  </div>
+</section>
 
-  <!-- Strategies -->
-  <section id="strategies">
-    <div class="panel">
-      <h2>Stratégies</h2>
-      <p class="muted-small">Clique sur une stratégie pour éditer. Les modifications sont sauvegardées automatiquement.</p>
-      <div style="display:flex;gap:8px;margin:10px 0">
-        <input id="newStrategyName" placeholder="Nom nouvelle stratégie" />
-        <button id="addStrategyBtn" class="primary">Ajouter</button>
-      </div>
-      <div id="strategiesList"></div>
-    </div>
-  </section>
-
-  <!-- Calendar -->
-  <section id="calendar">
-    <div class="panel">
-      <h2>Calendrier & Journal</h2>
-      <div style="display:flex;gap:8px;align-items:center;margin-bottom:10px">
-        <button id="prevM">&lt; Mois précédent</button>
-        <div id="monthLabel" class="muted-small" style="font-weight:700"></div>
-        <button id="nextM">Mois suivant &gt;</button>
-      </div>
-
-      <div id="calendarGrid" class="calendar-grid"></div>
-
-      <div style="margin-top:14px">
-        <h3>Ajouter / modifier entrée</h3>
-        <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
-          <input id="formDate" type="date">
-          <input id="formAsset" placeholder="Actif (ex: XAUUSD)">
-          <input id="formType" placeholder="achat / vente">
-          <input id="formPrice" placeholder="Prix" type="number" step="any">
-          <input id="formResult" placeholder="Résultat (numérique)" type="number" step="any">
-          <input id="formCapital" placeholder="Dépôt (optionnel)" type="number" step="any">
-        </div>
-        <textarea id="formDesc" placeholder="Description" style="width:100%;margin-top:8px;border-radius:8px;padding:8px"></textarea>
-        <div style="display:flex;gap:8px;margin-top:8px">
-          <button id="saveEntryBtn" class="primary">Sauvegarder</button>
-          <button id="deleteEntryBtn" class="danger" style="display:none">Supprimer</button>
-        </div>
-      </div>
-    </div>
-  </section>
-
-  <!-- Images -->
-  <section id="images">
-    <div class="panel">
-      <h2>Images par jour</h2>
-      <div style="display:flex;gap:8px;align-items:center">
-        <input id="imgDate" type="date" style="width:180px">
-        <input id="imgFiles" type="file" accept="image/*" multiple>
-        <button id="uploadImagesBtn" class="primary">Uploader</button>
-      </div>
-      <div id="gallery" class="gallery" style="margin-top:12px"></div>
-    </div>
-  </section>
-</main>
-
-<!-- TradingView script (ticker) -->
-<script type="text/javascript" src="https://s3.tradingview.com/external-embedding/embed-widget-ticker-tape.js" async>
-{
-  "symbols": [
-    {"proName":"OANDA:XAUUSD","title":"Gold"},
-    {"proName":"FX:EURUSD","title":"EUR/USD"},
-    {"proName":"BINANCE:BTCUSDT","title":"BTC/USDT"},
-    {"proName":"FX:USDOLLAR","title":"US Dollar Index"},
-    {"proName":"INDEX:DJI","title":"DJ30"}
-  ],
-  "colorTheme":"dark",
-  "isTransparent":false,
-  "displayMode":"adaptive",
-  "locale":"fr"
-}
-</script>
+<!-- Photos -->
+<section id="photos">
+  <div class="card">
+    <h2>Mes Photos</h2>
+    <input type="file" id="photoInput" accept="image/*">
+    <button onclick="addPhoto()">Ajouter</button>
+    <div id="photoPreview"></div>
+  </div>
+</section>
 
 <script>
-/* -----------------------
-   CONFIG: keys & firebase
-   ----------------------- */
-const FINNHUB_KEY = "d3ber21r01qqg7bua73gd3ber21r01qqg7bua740"; // ta clé Finnhub
-const firebaseConfig = {
-  apiKey: "AIzaSyBPcsf4ONjbYUcNTlAj6CEmsaTfISVdGA8",
-  authDomain: "perso-journaling.firebaseapp.com",
-  projectId: "perso-journaling",
-  storageBucket: "perso-journaling.appspot.com",
-  messagingSenderId: "660360215177",
-  appId: "1:660360215177:web:WEBAPPID_A_REMPLACER"
-};
-firebase.initializeApp(firebaseConfig);
-const auth = firebase.auth();
-const db = firebase.firestore();
-
-/* -----------------------
-   SPLASH behavior
-   ----------------------- */
-const splash = document.getElementById('splash');
-splash.addEventListener('click', ()=> splash.style.display='none');
-setTimeout(()=>{ if(splash) splash.style.display='none' }, 3000);
-
-/* -----------------------
-   TAB navigation
-   ----------------------- */
-document.querySelectorAll('nav button[data-tab]').forEach(btn=>{
-  btn.addEventListener('click', ()=>{
-    document.querySelectorAll('nav button[data-tab]').forEach(b=>b.classList.remove('active'));
-    document.querySelectorAll('main section').forEach(s=>s.classList.remove('active'));
-    btn.classList.add('active');
-    const tab = btn.dataset.tab;
-    document.getElementById(tab).classList.add('active');
+// ====== Navigation ======
+const tabs=document.querySelectorAll("nav button");
+tabs.forEach(btn=>{
+  btn.addEventListener("click",()=>{
+    tabs.forEach(b=>b.classList.remove("active"));
+    btn.classList.add("active");
+    document.querySelectorAll("section").forEach(sec=>sec.classList.remove("active"));
+    document.getElementById(btn.dataset.tab).classList.add("active");
   });
 });
 
-/* -----------------------
-   AUTH: email/password
-   ----------------------- */
-const authPanel = document.getElementById('authPanel');
-const btnSignIn = document.getElementById('btnSignIn');
-const btnSignUp = document.getElementById('btnSignUp');
-const authMsg = document.getElementById('authMsg');
-const signOutBtn = document.getElementById('signOutBtn');
+// ====== Carrousel Marchés ======
+const marketCarousel=document.getElementById("marketCarousel");
+const markets=["Gold monte","USD baisse","BTC en hausse","Nasdaq stable","S&P500 recule"];
+let idx=0;
+setInterval(()=>{
+  marketCarousel.innerHTML="<span>"+markets[idx]+"</span>";
+  idx=(idx+1)%markets.length;
+},3000);
 
-btnSignIn.addEventListener('click', async ()=>{
-  const email = document.getElementById('authEmail').value.trim();
-  const pass = document.getElementById('authPassword').value;
+// ====== Actualités ======
+const FINNHUB_KEY="d3ber21r01qqg7bua73gd3ber21r01qqg7bua740";
+const NEWSAPI_KEY="c273752849e34937bf79a8bba0917602";
+const newsListEl=document.getElementById("newsList");
+const newsLoading=document.getElementById("newsLoading");
+const newsCategory=document.getElementById("newsCategory");
+const newsLang=document.getElementById("newsLang");
+
+function prettyDateFromUnix(unixSec){
+  const d=new Date(unixSec*1000);
+  const now=new Date();
+  let label="";
+  if(d.toDateString()===now.toDateString()) label="Aujourd'hui";
+  else if(d.toDateString()===new Date(now.getTime()-86400000).toDateString()) label="Hier";
+  else if(d.toDateString()===new Date(now.getTime()+86400000).toDateString()) label="Demain";
+  else label=d.toLocaleDateString("fr-FR");
+  return `${label} ${d.toLocaleTimeString("fr-FR",{hour:"2-digit",minute:"2-digit"})}`;
+}
+function escapeHtml(str){return str.replace(/[&<>'"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;","'":"&#39;",'"':"&quot;"}[c]));}
+
+async function fetchNews(category="general",lang="en"){
+  newsLoading.textContent="Chargement...";
+  newsListEl.innerHTML="";
   try{
-    await auth.signInWithEmailAndPassword(email, pass);
-    authMsg.textContent = '';
-  } catch(e){
-    authMsg.textContent = 'Erreur connexion: ' + e.message;
-  }
-});
-
-btnSignUp.addEventListener('click', async ()=>{
-  const email = prompt("Email (pour inscription):");
-  const pass = prompt("Mot de passe (min 6 caractères):");
-  if(!email || !pass) return alert('Abandon.');
-  try{
-    const cred = await auth.createUserWithEmailAndPassword(email, pass);
-    await cred.user.sendEmailVerification();
-    alert('Compte créé. Vérifie ton email puis reconnecte-toi.');
-  } catch(e){
-    alert('Erreur inscription: ' + e.message);
-  }
-});
-
-signOutBtn.addEventListener('click', ()=>auth.signOut());
-
-/* -----------------------
-   When user auth changes -> load user data
-   ----------------------- */
-let currentUid = null;
-auth.onAuthStateChanged(async user=>{
-  if(user){
-    if(!user.emailVerified){
-      alert('Vérifie ton email (vérification envoyée).');
-      await auth.signOut();
-      return;
+    let url;
+    if(lang==="fr"){
+      url=`https://newsapi.org/v2/top-headlines?country=fr&category=${encodeURIComponent(category)}&apiKey=${NEWSAPI_KEY}`;
+    }else{
+      url=`https://finnhub.io/api/v1/news?category=${encodeURIComponent(category)}&token=${FINNHUB_KEY}`;
     }
-    currentUid = user.uid;
-    authPanel.style.display = 'none';
-    signOutBtn.style.display = 'inline-block';
-    // show dashboard
-    document.querySelector('nav button[data-tab="dashboard"]').click();
-    // load user data
-    loadStrategies();
-    loadJournal();
-    loadImages();
-  } else {
-    currentUid = null;
-    authPanel.style.display = '';
-    signOutBtn.style.display = 'none';
-    // hide sections except auth
-    document.querySelector('main section.active')?.classList.remove('active');
-    document.getElementById('dashboard').classList.remove('active'); // keep hidden
-  }
-});
+    const r=await fetch(url);
+    if(!r.ok) throw new Error("HTTP "+r.status);
+    const data=await r.json();
+    let list=[];
+    if(lang==="fr"){ list=data.articles||[]; }
+    else { list=(Array.isArray(data)?data:[]).slice(0,12); }
+    if(list.length===0){ newsListEl.innerHTML="<div class='muted-small'>Aucune actualité.</div>"; return; }
+    list.forEach(item=>{
+      let title,urlArticle,timestamp,sourceName;
+      if(lang==="fr"){
+        title=item.title; urlArticle=item.url; timestamp=new Date(item.publishedAt).getTime()/1000; sourceName=item.source.name;
+      }else{
+        title=item.headline; urlArticle=item.url; timestamp=item.datetime; sourceName=item.source;
+      }
+      const div=document.createElement("div");
+      div.className="news-item";
+      const timeLabel=timestamp?prettyDateFromUnix(timestamp):"";
+      div.innerHTML=`<a href="${urlArticle}" target="_blank">${escapeHtml(title)}</a><p>${timeLabel} • <span class="muted-small">${escapeHtml(sourceName||"")}</span></p>`;
+      newsListEl.appendChild(div);
+    });
+  }catch(e){newsListEl.innerHTML="<div class='muted-small'>Erreur chargement actus</div>";}
+  finally{newsLoading.textContent="";}
+}
+newsCategory.addEventListener("change",()=>fetchNews(newsCategory.value,newsLang.value));
+newsLang.addEventListener("change",()=>fetchNews(newsCategory.value,newsLang.value));
+fetchNews(newsCategory.value,newsLang.value);
 
-/* -----------------------
-   NEWS (Finnhub) with category filter + friendly dates
-   ----------------------- */
-const newsListEl = document.getElementById('newsList');
-const newsLoading = document.getElementById('newsLoading');
-const newsCategory = document.getElementById('newsCategory');
-
-function prettyDateFromUnix(unix){
-  const d = new Date(unix*1000);
-  const now = new Date();
-  const sameDay = d.getDate()===now.getDate() && d.getMonth()===now.getMonth() && d.getFullYear()===now.getFullYear();
-  const yesterday = new Date(now); yesterday.setDate(now.getDate()-1);
-  const isYesterday = d.getDate()===yesterday.getDate() && d.getMonth()===yesterday.getMonth() && d.getFullYear()===yesterday.getFullYear();
-  const tomorrow = new Date(now); tomorrow.setDate(now.getDate()+1);
-  const isTomorrow = d.getDate()===tomorrow.getDate() && d.getMonth()===tomorrow.getMonth() && d.getFullYear()===tomorrow.getFullYear();
-  let label = d.toLocaleDateString('fr-FR');
-  if(sameDay) label = "Aujourd'hui";
-  else if(isYesterday) label = "Hier";
-  else if(isTomorrow) label = "Demain";
-  const time = d.toLocaleTimeString('fr-FR',{hour:'2-digit',minute:'2-digit'});
-  return `${label} à ${time}`;
+// ====== Stratégies ======
+let strategyId=0;
+function addStrategy(){
+  const div=document.createElement("div");
+  div.className="card";
+  div.innerHTML=`<input placeholder="Nom stratégie"><textarea placeholder="Conditions"></textarea><button onclick="this.parentNode.remove()">Supprimer</button>`;
+  document.getElementById("strategyList").appendChild(div);
 }
 
-async function fetchNews(category='general'){
-  newsLoading.style.display = '';
-  newsLoading.textContent = 'Chargement des actus…';
-  newsListEl.innerHTML = '';
-  try{
-    // Finnhub categories: general, forex, crypto, merger, ipo, etc.
-    const url = `https://finnhub.io/api/v1/news?category=${encodeURIComponent(category)}&token=${FINNHUB_KEY}`;
-    const r = await fetch(url);
-    if(!r.ok) throw new Error(`HTTP ${r.status}`);
-    const data = await r.json();
-    newsListEl.innerHTML = '';
-    const list = (Array.isArray(data) ? data : []).slice(0,12);
-    if(list.length===0){
-      newsListEl.innerHTML = '<div class="muted-small">Aucune actualité pour cette catégorie.</div>';
-    } else {
-      list.forEach(item=>{
-        const div = document.createElement('div');
-        div.className = 'news-item';
-        const title = item.headline || item.summary || item.source;
-        const time = item.datetime ? prettyDateFromUnix(item.datetime) : '';
-        div.innerHTML = `<a href="${item.url}" target="_blank" rel="noopener">${escapeHtml(title)}</a>
-                         <p>${time} • <span class="muted-small">${escapeHtml(item.source||'source')}</span></p>`;
-        newsListEl.appendChild(div);
-      });
-    }
-  }catch(e){
-    newsListEl.innerHTML = `<div class="muted-small">Impossible de charger les actualités (${e.message}).</div>`;
-    console.error(e);
-  } finally{
-    newsLoading.style.display = 'none';
+// ====== Journal ======
+const monthYear=document.getElementById("monthYear");
+const calendarEl=document.getElementById("calendar");
+let today=new Date();let currentMonth=today.getMonth();let currentYear=today.getFullYear();
+let entries={};
+function renderCalendar(){
+  const firstDay=new Date(currentYear,currentMonth).getDay();
+  const daysInMonth=new Date(currentYear,currentMonth+1,0).getDate();
+  monthYear.textContent=new Date(currentYear,currentMonth).toLocaleString("fr-FR",{month:"long",year:"numeric"});
+  calendarEl.innerHTML="";
+  for(let i=0;i<firstDay;i++){calendarEl.appendChild(document.createElement("div"));}
+  for(let d=1;d<=daysInMonth;d++){
+    const div=document.createElement("div");
+    const dateStr=`${currentYear}-${currentMonth+1}-${d}`;
+    div.textContent=d;
+    if(new Date().toDateString()===new Date(currentYear,currentMonth,d).toDateString()) div.classList.add("today");
+    div.addEventListener("dblclick",()=>{
+      const note=prompt("Entrée journal pour "+dateStr,entries[dateStr]||"");
+      if(note){entries[dateStr]=note;}
+    });
+    calendarEl.appendChild(div);
   }
 }
-newsCategory.addEventListener('change', ()=> fetchNews(newsCategory.value));
-fetchNews(); // initial
+function prevMonth(){currentMonth--;if(currentMonth<0){currentMonth=11;currentYear--;}renderCalendar();}
+function nextMonth(){currentMonth++;if(currentMonth>11){currentMonth=0;currentYear++;}renderCalendar();}
+renderCalendar();
 
-function escapeHtml(s){ return String(s || '').replace(/[&<>"']/g, c=>({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' })[c]) }
-
-/* -----------------------
-   STRATEGIES: add / edit / delete (Firestore)
-   ----------------------- */
-const strategiesListEl = document.getElementById('strategiesList');
-const addStrategyBtn = document.getElementById('addStrategyBtn');
-const newStrategyName = document.getElementById('newStrategyName');
-
-addStrategyBtn.addEventListener('click', async ()=>{
-  if(!currentUid) return alert('Connecte-toi');
-  const name = (newStrategyName.value || '').trim();
-  if(!name) return alert('Donne un nom');
-  const doc = await db.collection('users').doc(currentUid).collection('strategies').add({
-    name, conditions: [], createdAt: firebase.firestore.FieldValue.serverTimestamp()
-  });
-  newStrategyName.value = '';
-  await loadStrategies();
-});
-
-async function loadStrategies(){
-  strategiesListEl.innerHTML = '<div class="muted-small">Chargement…</div>';
-  if(!currentUid) return strategiesListEl.innerHTML = '<div class="muted-small">Connecte-toi pour voir tes stratégies</div>';
-  const snap = await db.collection('users').doc(currentUid).collection('strategies').orderBy('createdAt','desc').get();
-  strategiesListEl.innerHTML = '';
-  snap.forEach(doc=>{
-    const data = doc.data();
-    const id = doc.id;
-    const item = document.createElement('div');
-    item.className = 'strategy';
-    item.innerHTML = `
-      <div style="flex:1">
-        <input data-id="${id}" class="strategy-name" value="${escapeHtml(data.name||'')}" style="width:100%;background:transparent;border:0;color:#e6fff0;font-weight:700;font-size:1rem"/>
-        <div class="conds" data-id="${id}"></div>
-        <div class="progress"><div class="bar" style="width:0%">0%</div></div>
-      </div>
-      <div style="display:flex;flex-direction:column;gap:6px">
-        <button data-id="${id}" class="primary btn-add-cond">+ cond</button>
-        <button data-id="${id}" class="danger btn-del-strat">Suppr</button>
-      </div>
-    `;
-    strategiesListEl.appendChild(item);
-
-    // populate conditions
-    const condsContainer = item.querySelector('.conds');
-    (data.conditions||[]).forEach((c, idx)=>{
-      const r = document.createElement('div');
-      r.innerHTML = `<label style="display:flex;gap:8px;align-items:center"><input type="checkbox" data-strat="${id}" data-idx="${idx}" ${c.checked?'checked':''}> <input data-strat="${id}" data-idx="${idx}" class="cond-text" value="${escapeHtml(c.text||'')}" style="background:transparent;border:0;color:#ddd"/></label>`;
-      condsContainer.appendChild(r);
-    });
-
-    // wire events
-    item.querySelector('.strategy-name').addEventListener('blur', async (e)=>{
-      const newName = e.target.value.trim();
-      await db.collection('users').doc(currentUid).collection('strategies').doc(id).update({name:newName});
-      // no reload required
-    });
-
-    item.querySelector('.btn-add-cond').addEventListener('click', async ()=>{
-      // add empty condition to Firestore
-      const ref = db.collection('users').doc(currentUid).collection('strategies').doc(id);
-      await ref.update({ conditions: firebase.firestore.FieldValue.arrayUnion({text:'Nouvelle condition', checked:false}) });
-      await loadStrategies();
-    });
-
-    item.querySelector('.btn-del-strat').addEventListener('click', async ()=>{
-      if(!confirm('Supprimer cette stratégie ?')) return;
-      await db.collection('users').doc(currentUid).collection('strategies').doc(id).delete();
-      await loadStrategies();
-    });
-  });
-}
-
-/* -----------------------
-   JOURNAL/CALENDAR: add / edit / delete entries (Firestore)
-   ----------------------- */
-const calendarGrid = document.getElementById('calendarGrid');
-const monthLabel = document.getElementById('monthLabel');
-const prevM = document.getElementById('prevM'), nextM = document.getElementById('nextM');
-const saveEntryBtn = document.getElementById('saveEntryBtn'), deleteEntryBtn = document.getElementById('deleteEntryBtn');
-
-let viewYear = new Date().getFullYear();
-let viewMonth = new Date().getMonth(); // 0-index
-let journalEntries = {}; // { 'YYYY-MM-DD': [{id, asset, ...}, ...] }
-let editingEntry = null; // {docId, date}
-
-function monthKey(y,m){ return `${y}-${String(m+1).padStart(2,'0')}`; }
-
-function renderMonth(y,m){
-  calendarGrid.innerHTML = '';
-  monthLabel.textContent = new Date(y,m,1).toLocaleString('fr-FR',{month:'long',year:'numeric'});
-  // days header
-  const week = ['Dim','Lun','Mar','Mer','Jeu','Ven','Sam'];
-  week.forEach(d=>{
-    const cell = document.createElement('div'); cell.style.fontWeight='700'; cell.style.textAlign='center'; cell.textContent = d;
-    calendarGrid.appendChild(cell);
-  });
-
-  // first day index
-  const firstDay = new Date(y,m,1).getDay();
-  const daysInMonth = new Date(y,m+1,0).getDate();
-
-  // empty cells
-  for(let i=0;i<firstDay;i++) calendarGrid.appendChild(document.createElement('div'));
-
-  for(let d=1; d<=daysInMonth; d++){
-    const dateStr = `${y}-${String(m+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
-    const cell = document.createElement('div');
-    cell.className = 'calendar-cell';
-    cell.innerHTML = `<div class="date-label">${d}</div>`;
-    // if entries
-    const list = journalEntries[dateStr] || [];
-    list.forEach(en=>{
-      const e = document.createElement('div');
-      e.className = 'entry';
-      const sign = (en.result>=0) ? 'green' : 'red';
-      e.innerHTML = `<i class="fas ${en.type==='achat'?'fa-arrow-up':'fa-arrow-down'}"></i>
-                     <div style="flex:1"><strong>${escapeHtml(en.asset)}</strong><div class="${sign} amt">${Number(en.result)||0}</div></div>`;
-      e.addEventListener('dblclick', ()=> openEditEntry(dateStr, en.id));
-      cell.appendChild(e);
-    });
-
-    // click to add new for that date
-    cell.addEventListener('click', ()=> {
-      document.getElementById('formDate').value = dateStr;
-      document.getElementById('formAsset').value = '';
-      document.getElementById('formType').value = 'achat';
-      document.getElementById('formPrice').value = '';
-      document.getElementById('formResult').value = '';
-      document.getElementById('formCapital').value = '';
-      document.getElementById('formDesc').value = '';
-      editingEntry = null;
-      deleteEntryBtn.style.display = 'none';
-      // scroll to form
-      document.getElementById('formDate').scrollIntoView({behavior:'smooth'});
-    });
-
-    calendarGrid.appendChild(cell);
-  }
-}
-
-// next / prev month
-prevM.addEventListener('click', ()=>{
-  viewMonth--;
-  if(viewMonth<0){ viewMonth=11; viewYear--; }
-  renderMonth(viewYear, viewMonth);
-});
-nextM.addEventListener('click', ()=>{
-  viewMonth++;
-  if(viewMonth>11){ viewMonth=0; viewYear++; }
-  renderMonth(viewYear, viewMonth);
-});
-
-// save entry: if editingEntry set -> update doc, else add
-saveEntryBtn.addEventListener('click', async ()=>{
-  if(!currentUid) return alert('Connecte-toi');
-  const date = document.getElementById('formDate').value;
-  if(!date) return alert('Choisis une date');
-  const payload = {
-    asset: document.getElementById('formAsset').value || 'UNKNOWN',
-    type: document.getElementById('formType').value || 'achat',
-    price: Number(document.getElementById('formPrice').value) || 0,
-    result: Number(document.getElementById('formResult').value) || 0,
-    capital: Number(document.getElementById('formCapital').value) || 0,
-    desc: document.getElementById('formDesc').value || '',
-    userId: currentUid,
-    date
+// ====== Photos ======
+const photoInput=document.getElementById("photoInput");
+const photoPreview=document.getElementById("photoPreview");
+function addPhoto(){
+  const file=photoInput.files[0];
+  if(!file) return;
+  const reader=new FileReader();
+  reader.onload=e=>{
+    const img=document.createElement("img");
+    img.src=e.target.result;
+    photoPreview.appendChild(img);
   };
-
-  if(editingEntry && editingEntry.docId){
-    // update
-    await db.collection('users').doc(currentUid).collection('journal').doc(editingEntry.docId).update(payload);
-    editingEntry = null;
-    deleteEntryBtn.style.display = 'none';
-  } else {
-    // add
-    await db.collection('users').doc(currentUid).collection('journal').add({...payload, createdAt: firebase.firestore.FieldValue.serverTimestamp()});
-  }
-  await loadJournal();
-  // clear form
-  document.getElementById('formAsset').value = '';
-  document.getElementById('formType').value = 'achat';
-  document.getElementById('formPrice').value = '';
-  document.getElementById('formResult').value = '';
-  document.getElementById('formCapital').value = '';
-  document.getElementById('formDesc').value = '';
-});
-
-// delete entry btn
-deleteEntryBtn.addEventListener('click', async ()=>{
-  if(!editingEntry || !editingEntry.docId) return;
-  if(!confirm('Supprimer cette entrée ?')) return;
-  await db.collection('users').doc(currentUid).collection('journal').doc(editingEntry.docId).delete();
-  editingEntry = null;
-  deleteEntryBtn.style.display='none';
-  await loadJournal();
-});
-
-// open entry for edit (docId) -> populate form
-async function openEditEntry(dateStr, docId){
-  // load doc data
-  const snap = await db.collection('users').doc(currentUid).collection('journal').where('date','==', dateStr).get();
-  // find doc with id===docId
-  let chosen = null;
-  snap.forEach(d=>{
-    if(d.id === docId) chosen = { id:d.id, ...d.data() };
-  });
-  if(!chosen){
-    // fallback: choose first entry for that date
-    const any = snap.docs[0];
-    if(any) chosen = { id:any.id, ...any.data() };
-  }
-  if(!chosen) return alert('Entrée introuvable');
-  // fill
-  document.getElementById('formDate').value = chosen.date;
-  document.getElementById('formAsset').value = chosen.asset || '';
-  document.getElementById('formType').value = chosen.type || 'achat';
-  document.getElementById('formPrice').value = chosen.price ?? '';
-  document.getElementById('formResult').value = chosen.result ?? '';
-  document.getElementById('formCapital').value = chosen.capital ?? '';
-  document.getElementById('formDesc').value = chosen.desc || '';
-  editingEntry = { docId: chosen.id, date: chosen.date };
-  deleteEntryBtn.style.display = 'inline-block';
-  // scroll to form
-  document.getElementById('formDate').scrollIntoView({behavior:'smooth'});
+  reader.readAsDataURL(file);
 }
-
-/* loadJournal from Firestore and populate journalEntries */
-async function loadJournal(){
-  journalEntries = {};
-  if(!currentUid) return;
-  const snap = await db.collection('users').doc(currentUid).collection('journal').orderBy('date','desc').get();
-  snap.forEach(doc=>{
-    const d = doc.data();
-    const date = d.date;
-    if(!journalEntries[date]) journalEntries[date] = [];
-    journalEntries[date].push({ id: doc.id, asset: d.asset, type:d.type, price:d.price, result:d.result, desc:d.desc, capital:d.capital });
-  });
-  renderMonth(viewYear, viewMonth);
-}
-
-/* -----------------------
-   IMAGES: save to Firestore as base64 (simple) and display
-   ----------------------- */
-const uploadImagesBtn = document.getElementById('uploadImagesBtn');
-const imgFiles = document.getElementById('imgFiles');
-const imgDate = document.getElementById('imgDate');
-const gallery = document.getElementById('gallery');
-
-uploadImagesBtn.addEventListener('click', async ()=>{
-  if(!currentUid) return alert('Connecte-toi');
-  const files = imgFiles.files;
-  if(!files || files.length===0) return alert('Choisis des images');
-  const date = imgDate.value || new Date().toISOString().slice(0,10);
-  for(const f of files){
-    const dataUrl = await toDataURL(f);
-    await db.collection('users').doc(currentUid).collection('images').add({
-      date, src: dataUrl, createdAt: firebase.firestore.FieldValue.serverTimestamp()
-    });
-  }
-  imgFiles.value = '';
-  await loadImages();
-});
-
-function toDataURL(file){
-  return new Promise((res,rej)=>{
-    const fr = new FileReader();
-    fr.onload = ()=> res(fr.result);
-    fr.onerror = rej;
-    fr.readAsDataURL(file);
-  });
-}
-
-async function loadImages(){
-  gallery.innerHTML = '';
-  if(!currentUid) return;
-  const snap = await db.collection('users').doc(currentUid).collection('images').orderBy('createdAt','desc').limit(200).get();
-  snap.forEach(doc=>{
-    const d = doc.data();
-    const img = document.createElement('img');
-    img.src = d.src;
-    img.title = d.date || '';
-    img.style.maxWidth = '140px';
-    img.style.borderRadius = '8px';
-    img.style.margin = '6px';
-    gallery.appendChild(img);
-  });
-}
-
-/* -----------------------
-   INITIAL calls
-   ----------------------- */
-renderMonth(viewYear, viewMonth);
-
-/* Refresh news regularly */
-setInterval(()=> fetchNews(newsCategory.value), 1000*60*5); // 5 min
-
-/* Helper: simple escape (we used before) */
-function escapeHtml(s){ return String(s||'').replace(/[&<>"']/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'})[c]); }
-
 </script>
 </body>
 </html>
