@@ -2,31 +2,27 @@
 <html lang="fr">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Trade Board Pro</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 <style>
-body, html {margin:0;padding:0;font-family:'Segoe UI',sans-serif;background:#111;color:#0f0;overflow-x:hidden;}
-header{background:#0f0;color:#111;padding:1rem;text-align:center;font-size:1.8rem;font-weight:bold;position:sticky;top:0;z-index:50;}
-nav{display:flex;justify-content:space-around;background:#222;padding:0.5rem 0;position:sticky;top:60px;z-index:40;}
-nav button{padding:0.6rem 1.2rem;border:none;border-radius:6px;font-weight:bold;cursor:pointer;transition:0.3s;background:#444;color:#fff;}
-nav button.active{background:#0f0;color:#111;}
-section{padding:1rem;display:none;}
-section.active{display:block;}
-.card{background:#222;margin-bottom:1rem;padding:1rem;border-radius:10px;box-shadow:0 4px 12px rgba(0,0,0,0.5);}
-h2{color:#0f0;}
-.carousel{overflow:hidden;white-space:nowrap;background:#000;padding:0.5rem;margin-bottom:1rem;}
-.carousel span{display:inline-block;margin-right:2rem;color:#0f0;font-weight:bold;}
-.news-item{margin-bottom:0.5rem;}
-.news-item a{color:#0f0;text-decoration:none;}
-.news-item a:hover{text-decoration:underline;}
-.muted-small{color:#aaa;font-size:0.8rem;}
-.calendar-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:5px;}
-.calendar-grid div{border:1px solid #444;min-height:80px;padding:3px;cursor:pointer;font-size:0.9rem;}
-.today{background:#0f05;border-color:#0f0;}
-#photoPreview img{max-width:100%; margin-top:10px;border-radius:8px;}
-input,textarea,select,button{border-radius:5px;background:#222;color:#0f0;border:1px solid #555;padding:0.4rem;margin:0.2rem 0;}
-button.addEntry, button.authButton{background:#0f0;color:#111;width:100%;cursor:pointer;}
-button.addEntry:hover,button.authButton:hover{background:#0b0;}
+body { font-family: Arial, sans-serif; margin:0; background:#111; color:#f5f5f5; }
+header { background:#0f0; color:#111; padding:1rem; text-align:center; font-size:1.4rem; font-weight:bold; }
+nav { display:flex; justify-content:space-around; background:#222; position:sticky; top:0; z-index:10; }
+nav button { flex:1; padding:0.7rem; border:none; background:#222; color:#f5f5f5; font-size:1rem; cursor:pointer; }
+nav button.active { background:#0f0; color:#111; font-weight:bold; }
+section { display:none; padding:1rem; }
+section.active { display:block; }
+.card { background:#1a1a1a; padding:1rem; margin:1rem 0; border-radius:10px; box-shadow:0 2px 6px rgba(0,0,0,0.5); }
+h2 { color:#0f0; }
+.news-item { margin-bottom:1rem; }
+.news-item a { color:#0f0; text-decoration:none; font-weight:bold; }
+.muted-small { color:#aaa; font-size:0.8rem; }
+.carousel { overflow:hidden; white-space:nowrap; background:#000; padding:0.5rem; margin-bottom:1rem; }
+.carousel span { display:inline-block; margin-right:2rem; color:#0f0; font-weight:bold; }
+.calendar-grid { display:grid; grid-template-columns:repeat(7,1fr); gap:5px; }
+.calendar-grid div { border:1px solid #444; min-height:80px; padding:3px; cursor:pointer; font-size:0.9rem; }
+.today { background:#0f05; border-color:#0f0; }
+#photoPreview img {max-width:100%; margin-top:10px; border-radius:8px;}
 </style>
 </head>
 <body>
@@ -54,7 +50,7 @@ button.addEntry:hover,button.authButton:hover{background:#0b0;}
       <div id="tradingview_ticker"></div>
       <script type="text/javascript" src="https://s3.tradingview.com/external-embedding/embed-widget-ticker-tape.js" async>
       {
-        "symbols":[
+        "symbols": [
           {"proName":"FOREXCOM:XAUUSD","title":"Gold"},
           {"proName":"CAPITALCOM:US500","title":"S&P 500"},
           {"proName":"NASDAQ:NDX","title":"Nasdaq 100"},
@@ -71,7 +67,7 @@ button.addEntry:hover,button.authButton:hover{background:#0b0;}
   </div>
   <div class="card">
     <h2>Calendrier économique</h2>
-    <iframe src="https://sslecal2.investing.com?lang=12&calType=day&timeZone=48&columns=exc_flags,date,time,event,actual,forecast,previous&importance=1,2,3&countries=5,72,22,17,39,43,55,4,26,10,12,6,37,97,72" width="100%" height="500" frameborder="0" allowtransparency="true"></iframe>
+    <iframe src="https://sslecal2.investing.com?ecoDayBackground=%23111&defaultFont=Arial&innerBorderColor=%230f0&borderColor=%230f0&columns=exc_flags,date,time,event,actual,forecast,previous&countries=5,72,22,17,39,43,55,4,26,10,12,6,37,97,72&importance=1,2,3&calType=day&timeZone=48&lang=12" width="100%" height="500" frameborder="0" allowtransparency="true"></iframe>
   </div>
 </section>
 
@@ -79,13 +75,19 @@ button.addEntry:hover,button.authButton:hover{background:#0b0;}
 <section id="actualites">
   <div class="card">
     <h2>Actualités financières</h2>
+    <label>Langue :
+      <select id="newsLang">
+        <option value="fr">Français</option>
+        <option value="en">Anglais</option>
+      </select>
+    </label>
     <label>Catégorie :
       <select id="newsCategory">
         <option value="general">Général</option>
         <option value="forex">Forex</option>
         <option value="crypto">Crypto</option>
-        <option value="gold">Gold</option>
         <option value="bourse">Bourse</option>
+        <option value="gold">Gold</option>
       </select>
     </label>
     <div id="newsLoading" class="muted-small"></div>
@@ -126,63 +128,81 @@ button.addEntry:hover,button.authButton:hover{background:#0b0;}
 </section>
 
 <script>
-// ===== Navigation =====
+// ====== Navigation ======
 const tabs=document.querySelectorAll("nav button");
-tabs.forEach(btn=>{btn.addEventListener("click",()=>{
-  tabs.forEach(b=>b.classList.remove("active"));
-  btn.classList.add("active");
-  document.querySelectorAll("section").forEach(sec=>sec.classList.remove("active"));
-  document.getElementById(btn.dataset.tab).classList.add("active");
-})});
+tabs.forEach(btn=>{
+  btn.addEventListener("click",()=>{
+    tabs.forEach(b=>b.classList.remove("active"));
+    btn.classList.add("active");
+    document.querySelectorAll("section").forEach(sec=>sec.classList.remove("active"));
+    document.getElementById(btn.dataset.tab).classList.add("active");
+  });
+});
 
-// ===== Carrousel Marchés =====
+// ====== Carrousel Marchés ======
 const marketCarousel=document.getElementById("marketCarousel");
 const markets=["Gold monte","USD baisse","BTC en hausse","Nasdaq stable","S&P500 recule"];
 let idx=0;
 setInterval(()=>{marketCarousel.innerHTML="<span>"+markets[idx]+"</span>"; idx=(idx+1)%markets.length;},3000);
 
-// ===== Actualités =====
+// ====== Actualités ======
 const NEWSAPI_KEY="c273752849e34937bf79a8bba0917602";
 const newsListEl=document.getElementById("newsList");
 const newsLoading=document.getElementById("newsLoading");
 const newsCategory=document.getElementById("newsCategory");
+const newsLang=document.getElementById("newsLang");
 
-function prettyDateFromUnix(unixSec){
-  const d=new Date(unixSec*1000);
-  const now=new Date();
-  if(d.toDateString()===now.toDateString()) return `Aujourd'hui ${d.toLocaleTimeString('fr-FR',{hour:'2-digit',minute:'2-digit'})}`;
-  else if(d.toDateString()===new Date(now.getTime()-86400000).toDateString()) return `Hier ${d.toLocaleTimeString('fr-FR',{hour:'2-digit',minute:'2-digit'})}`;
-  else if(d.toDateString()===new Date(now.getTime()+86400000).toDateString()) return `Demain ${d.toLocaleTimeString('fr-FR',{hour:'2-digit',minute:'2-digit'})}`;
-  else return `${d.toLocaleDateString('fr-FR')} ${d.toLocaleTimeString('fr-FR',{hour:'2-digit',minute:'2-digit'})}`;
+function prettyDate(d){
+  const now=new Date(); let label="";
+  if(d.toDateString()===now.toDateString()) label="Aujourd'hui";
+  else if(d.toDateString()===new Date(now.getTime()-86400000).toDateString()) label="Hier";
+  else if(d.toDateString()===new Date(now.getTime()+86400000).toDateString()) label="Demain";
+  else label=d.toLocaleDateString("fr-FR");
+  return label + " " + d.toLocaleTimeString("fr-FR",{hour:"2-digit",minute:"2-digit"});
 }
 
 function escapeHtml(str){return str.replace(/[&<>'"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;","'":"&#39;",'"':"&quot;"}[c]));}
 
-async function fetchNews(category="general"){
+function getNewsAPICategory(cat){
+    if(cat==="gold" || cat==="forex" || cat==="bourse") return "business";
+    if(cat==="crypto") return "technology";
+    return "general";
+}
+
+async function fetchNews(category="general",lang="fr"){
   newsLoading.textContent="Chargement...";
   newsListEl.innerHTML="";
   try{
-    // URL filtrée pour la catégorie
-    let url=`https://newsapi.org/v2/top-headlines?language=fr&category=${category==='gold'?'business':category}&q=${category==='gold'?'gold':''}&apiKey=${NEWSAPI_KEY}`;
+    let url;
+    if(lang==="fr"){
+      url=`https://newsapi.org/v2/top-headlines?language=fr&category=${getNewsAPICategory(category)}${category==="gold"?"&q=gold":""}&apiKey=${NEWSAPI_KEY}`;
+    } else {
+      url=`https://newsapi.org/v2/top-headlines?language=en&category=${getNewsAPICategory(category)}${category==="gold"?"&q=gold":""}&apiKey=${NEWSAPI_KEY}`;
+    }
     const r=await fetch(url);
     if(!r.ok) throw new Error("HTTP "+r.status);
     const data=await r.json();
-    const articles=data.articles||[];
-    if(articles.length===0){ newsListEl.innerHTML="<div class='muted-small'>Aucune actualité.</div>"; return; }
-    articles.forEach(item=>{
+    const list=data.articles||[];
+    if(list.length===0){ newsListEl.innerHTML="<div class='muted-small'>Aucune actualité.</div>"; return; }
+    list.forEach(item=>{
+      const title=item.title;
+      const urlArticle=item.url;
+      const date=new Date(item.publishedAt);
       const div=document.createElement("div");
       div.className="news-item";
-      const timeLabel=item.publishedAt?prettyDateFromUnix(new Date(item.publishedAt).getTime()/1000):"";
-      div.innerHTML=`<a href="${item.url}" target="_blank">${escapeHtml(item.title)}</a><p>${timeLabel} • <span class="muted-small">${escapeHtml(item.source.name)}</span></p>`;
+      div.innerHTML=`<a href="${urlArticle}" target="_blank">${escapeHtml(title)}</a>
+        <p>${prettyDate(date)}</p>`;
       newsListEl.appendChild(div);
     });
-  }catch(e){newsListEl.innerHTML="<div class='muted-small'>Erreur chargement actus</div>";}
+  } catch(e){newsListEl.innerHTML="<div class='muted-small'>Erreur chargement actus</div>";}
   finally{newsLoading.textContent="";}
 }
-newsCategory.addEventListener("change",()=>fetchNews(newsCategory.value));
-fetchNews(newsCategory.value);
 
-// ===== Stratégies =====
+newsCategory.addEventListener("change",()=>fetchNews(newsCategory.value,newsLang.value));
+newsLang.addEventListener("change",()=>fetchNews(newsCategory.value,newsLang.value));
+fetchNews(newsCategory.value,newsLang.value);
+
+// ====== Stratégies ======
 function addStrategy(){
   const div=document.createElement("div");
   div.className="card";
@@ -190,7 +210,7 @@ function addStrategy(){
   document.getElementById("strategyList").appendChild(div);
 }
 
-// ===== Journal =====
+// ====== Journal ======
 const monthYear=document.getElementById("monthYear");
 const calendarEl=document.getElementById("calendar");
 let today=new Date(); let currentMonth=today.getMonth(); let currentYear=today.getFullYear();
@@ -202,10 +222,13 @@ function renderCalendar(){
   for(let i=0;i<firstDay;i++){calendarEl.appendChild(document.createElement("div"));}
   for(let d=1;d<=daysInMonth;d++){
     const div=document.createElement("div");
+    const dateStr=`${currentYear}-${currentMonth+1}-${d}`;
     div.textContent=d;
     if(new Date().toDateString()===new Date(currentYear,currentMonth,d).toDateString()) div.classList.add("today");
-    const dateStr=`${currentYear}-${currentMonth+1}-${d}`;
-    div.addEventListener("dblclick",()=>{ const note=prompt("Entrée journal pour "+dateStr,""); if(note){entries[dateStr]=note;} });
+    div.addEventListener("dblclick",()=>{
+      const note=prompt("Entrée journal pour "+dateStr,entries[dateStr]||"");
+      if(note){entries[dateStr]=note;}
+    });
     calendarEl.appendChild(div);
   }
 }
@@ -213,14 +236,18 @@ function prevMonth(){currentMonth--; if(currentMonth<0){currentMonth=11; current
 function nextMonth(){currentMonth++; if(currentMonth>11){currentMonth=0; currentYear++;} renderCalendar();}
 renderCalendar();
 
-// ===== Photos =====
+// ====== Photos ======
 const photoInput=document.getElementById("photoInput");
 const photoPreview=document.getElementById("photoPreview");
 function addPhoto(){
   const file=photoInput.files[0];
   if(!file) return;
   const reader=new FileReader();
-  reader.onload=e=>{ const img=document.createElement("img"); img.src=e.target.result; photoPreview.appendChild(img); };
+  reader.onload=e=>{
+    const img=document.createElement("img");
+    img.src=e.target.result;
+    photoPreview.appendChild(img);
+  };
   reader.readAsDataURL(file);
 }
 </script>
