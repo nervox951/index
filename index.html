@@ -68,14 +68,15 @@ h2 { color:#0f0; }
   </div>
   <div class="card">
     <h2>Calendrier économique</h2>
-    <iframe src="https://sslecal2.investing.com?ecoDayBackground=%23111&defaultFont=Arial&innerBorderColor=%230f0&borderColor=%230f0&columns=exc_flags,date,time,event,actual,forecast,previous&countries=5,72,22,17,39,43,55,4,26,10,12,6,37,97,72&importance=1,2,3&calType=day&timeZone=48&lang=10" width="100%" height="500" frameborder="0" allowtransparency="true"></iframe>
+    <!-- Investing.com en français -->
+    <iframe src="https://sslecal2.investing.com?ecoDayBackground=%23111&defaultFont=Arial&innerBorderColor=%230f0&borderColor=%230f0&columns=exc_flags,date,time,event,actual,forecast,previous&countries=5,72,22,17,39,43,55,4,26,10,12,6,37,97,72&importance=1,2,3&calType=day&timeZone=48&lang=12" width="100%" height="500" frameborder="0" allowtransparency="true"></iframe>
   </div>
 </section>
 
 <!-- Actualités -->
 <section id="actualites">
   <div class="card">
-    <h2>Actualités financières</h2>
+    <h2>Financial News (English)</h2>
     <div id="newsLoading" class="muted-small"></div>
     <div id="newsList"></div>
   </div>
@@ -117,7 +118,8 @@ h2 { color:#0f0; }
 <section id="sentiment">
   <div class="card">
     <h2>Sentiment du marché</h2>
-    <iframe src="https://widgets.myfxbook.com/forex-sentiment?type=web&symbol=EURUSD" width="100%" height="400" frameborder="0"></iframe>
+    <!-- Myfxbook widget corrigé -->
+    <iframe src="https://widgets.myfxbook.com/forex-sentiment?type=web&symbol=EURUSD" width="100%" height="400" frameborder="0" style="border:none;"></iframe>
   </div>
 </section>
 
@@ -135,25 +137,25 @@ tabs.forEach(btn=>{
 
 // ====== Carrousel Marchés ======
 const marketCarousel=document.getElementById("marketCarousel");
-const markets=["Gold monte","USD baisse","BTC en hausse","Nasdaq stable","S&P500 recule"];
+const markets=["Gold up","USD down","BTC up","Nasdaq stable","S&P500 down"];
 let idx=0;
 setInterval(()=>{marketCarousel.innerHTML="<span>"+markets[idx]+"</span>"; idx=(idx+1)%markets.length;},3000);
 
-// ====== Actualités (français uniquement) ======
+// ====== Actualités (anglais uniquement) ======
 const NEWSAPI_KEY="c273752849e34937bf79a8bba0917602";
 const newsListEl=document.getElementById("newsList");
 const newsLoading=document.getElementById("newsLoading");
 
 async function fetchNews(){
-  newsLoading.textContent="Chargement...";
+  newsLoading.textContent="Loading...";
   newsListEl.innerHTML="";
   try{
-    const url=`https://newsapi.org/v2/top-headlines?language=fr&category=business&apiKey=${NEWSAPI_KEY}`;
+    const url=`https://newsapi.org/v2/top-headlines?language=en&category=business&apiKey=${NEWSAPI_KEY}`;
     const r=await fetch(url);
     if(!r.ok) throw new Error("HTTP "+r.status);
     const data=await r.json();
     const list=data.articles||[];
-    if(list.length===0){ newsListEl.innerHTML="<div class='muted-small'>Aucune actualité.</div>"; return; }
+    if(list.length===0){ newsListEl.innerHTML="<div class='muted-small'>No news available.</div>"; return; }
     list.forEach(item=>{
       const title=item.title;
       const urlArticle=item.url;
@@ -161,10 +163,10 @@ async function fetchNews(){
       const div=document.createElement("div");
       div.className="news-item";
       div.innerHTML=`<a href="${urlArticle}" target="_blank">${title}</a>
-        <p>${date.toLocaleDateString("fr-FR")} ${date.toLocaleTimeString("fr-FR",{hour:"2-digit",minute:"2-digit"})}</p>`;
+        <p>${date.toLocaleDateString("en-GB")} ${date.toLocaleTimeString("en-GB",{hour:"2-digit",minute:"2-digit"})}</p>`;
       newsListEl.appendChild(div);
     });
-  } catch(e){newsListEl.innerHTML="<div class='muted-small'>Erreur chargement actus</div>";}
+  } catch(e){newsListEl.innerHTML="<div class='muted-small'>Error loading news</div>";}
   finally{newsLoading.textContent="";}
 }
 fetchNews();
